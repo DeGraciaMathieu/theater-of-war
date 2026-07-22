@@ -1,0 +1,42 @@
+:root{
+  --encre:#0e100e; --os:#e8e4d6; --os-faible:#8d9088;
+  --ambre:#e0a53c; --trait:#3a423a; --eau:#2d4a63;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--encre);color:var(--os);
+  font-family:"Saira Condensed",-apple-system,"Segoe UI Semibold",sans-serif;
+  display:flex;flex-direction:column;overflow:hidden}
+.barre{display:flex;align-items:baseline;gap:12px;padding:8px 14px;
+  border-bottom:1px solid var(--trait);background:#12150f;flex:none}
+.titre{font-weight:700;letter-spacing:.22em;text-transform:uppercase;font-size:14px}
+.lieu{font-size:12px;letter-spacing:.14em;color:var(--os-faible)}
+.etat{margin-left:auto;font-family:"Share Tech Mono",monospace;font-size:12px;color:var(--ambre)}
+.scene{position:relative;flex:1;min-height:0}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.charge{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:14px;background:rgba(14,16,14,.9);
+  text-align:center;padding:24px}
+.charge h2{font-weight:700;letter-spacing:.18em;text-transform:uppercase;font-size:15px}
+.charge p{font-family:"Share Tech Mono",monospace;font-size:12px;color:var(--os-faible);max-width:440px;line-height:1.6}
+.spin{width:34px;height:34px;border:3px solid var(--trait);border-top-color:var(--ambre);
+  border-radius:50%;animation:r 0.9s linear infinite}
+@keyframes r{to{transform:rotate(360deg)}}
+.hud{flex:none;border-top:1px solid var(--trait);background:#12150f;
+  display:flex;height:118px}
+.bloc{padding:8px 12px;border-right:1px solid var(--trait);min-width:0;overflow:hidden}
+.bloc h3{font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--os-faible);margin-bottom:6px;font-weight:500}
+.cmd{display:flex;gap:6px;flex-wrap:wrap}
+button{font-family:inherit;font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+  background:#1d221b;color:var(--os);border:1px solid var(--trait);padding:7px 11px;cursor:pointer}
+button:hover{border-color:var(--ambre);color:var(--ambre)}
+button[aria-pressed="true"]{background:var(--ambre);color:var(--encre);border-color:var(--ambre)}
+.fiche{flex:1;font-size:13px;line-height:1.5}
+.fiche .vide{color:var(--os-faible)}
+.jauge{height:5px;background:#232823;margin:3px 0 7px;position:relative}
+.jauge i{position:absolute;inset:0 auto 0 0;display:block}
+.stats{width:min(30vw,280px);font-family:"Share Tech Mono",monospace;font-size:11px;
+  line-height:1.6;color:var(--os-faible);border-right:none}
+.stats b{color:var(--os);font-weight:400}
+@media (max-width:720px){.hud{flex-wrap:wrap;height:auto;max-height:44vh}
+  .stats{width:100%;border-top:1px solid var(--trait)}}
