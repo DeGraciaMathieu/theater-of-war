@@ -4,8 +4,7 @@ import { calculerSupply } from "./logistique.js";
 import { journal, majCompteurs } from "./hud.js";
 
 export function genererCarte(){
-  etat.prov = []; etat.unites = []; etat.ordres = [];
-  etat.jour = 1; etat.fini = false; etat.selection = null;
+  reinitialiser();
   const prov = etat.prov;
 
   // sites répartis par échantillonnage « meilleur candidat » (fronts lisibles)
@@ -48,17 +47,34 @@ export function genererCarte(){
     else if (h >= sColl) t = 2;                  // collines
     else if (h <= sMarais) t = 4;                // marais (creux)
     else if (h <= sBocage) t = 1;                // bocage
-    prov.push({
-      id:i, x:s.x, y:s.y, cx:s.x, cy:s.y, px:0,
-      terrain:t, proprio:0, voisins:[], depot:false, qg:false,
-      supply:0, ville:alea() < 0.13,
-      charge:0, cap:0, congestion:1, debit:0, alerte:false, relie:false,
-    });
+    prov.push(creerProvince(i, s.x, s.y, t, alea() < 0.13));
   });
 
-  // rasterisation Voronoï (une fois) + centroïdes + adjacence
-  // Grille de buckets : à cette résolution, comparer chaque pixel aux 220 sites
-  // coûte trop cher. On ne teste que les sites des cases voisines.
+  rasteriserVoronoi(null);
+  installerTheatre();
+}
+
+export function reinitialiser(){
+  etat.prov = []; etat.unites = []; etat.ordres = [];
+  etat.jour = 1; etat.fini = false; etat.selection = null;
+}
+
+export function creerProvince(id, x, y, terrain, ville){
+  return {
+    id, x, y, cx:x, cy:y, px:0,
+    terrain, proprio:0, voisins:[], depot:false, qg:false,
+    supply:0, ville,
+    charge:0, cap:0, congestion:1, debit:0, alerte:false, relie:false,
+  };
+}
+
+// rasterisation Voronoï (une fois) + centroïdes + adjacence.
+// eauMask (optionnel) : les pixels d'eau ne relèvent d'aucune province (-1),
+// deux rives ne deviennent donc jamais voisines par l'eau.
+// Grille de buckets : à cette résolution, comparer chaque pixel aux sites
+// coûte trop cher. On ne teste que les sites des cases voisines.
+export function rasteriserVoronoi(eauMask){
+  const prov = etat.prov;
   const CELL = 52;
   const GW = Math.ceil(RW/CELL), GH = Math.ceil(RH/CELL);
   const cases = Array.from({length: GW*GH}, () => []);
@@ -71,6 +87,7 @@ export function genererCarte(){
   for (let y = 0; y < RH; y++){
     const gy = Math.min(GH-1, (y/CELL)|0);
     for (let x = 0; x < RW; x++){
+      if (eauMask && eauMask[y*RW + x]){ siteIdx[y*RW + x] = -1; continue; }
       const gx = Math.min(GW-1, (x/CELL)|0);
       let best = -1, bd = Infinity;
       for (let ry = 2; ry <= 4 && best === -1; ry++){        // anneaux élargis
@@ -96,17 +113,25 @@ export function genererCarte(){
   const vus = new Set();
   for (let y = 0; y < RH; y++) for (let x = 0; x < RW; x++){
     const a = siteIdx[y*RW+x];
+    if (a < 0) continue;
     for (const [dx,dy] of [[1,0],[0,1]]){
       const nx = x+dx, ny = y+dy;
       if (nx >= RW || ny >= RH) continue;
       const b = siteIdx[ny*RW+nx];
-      if (a === b) continue;
+      if (a === b || b < 0) continue;
       const k = a < b ? a*1e4+b : b*1e4+a;
       if (vus.has(k)) continue;
       vus.add(k);
       prov[a].voisins.push(b); prov[b].voisins.push(a);
     }
   }
+}
+
+// Partage du théâtre entre les camps, bases, raster de fond et premier supply :
+// tout ce qui suit la construction des provinces, quelle que soit leur origine
+// (procédurale ou carte réelle).
+export function installerTheatre(){
+  const prov = etat.prov;
 
   // partage initial : Fédération au nord-est, Alliance au sud-ouest
   for (const p of prov){

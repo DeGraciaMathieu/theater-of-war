@@ -20,6 +20,9 @@ function motifTerrain(t, x, y){
       const m = y % 5;
       return m < 1 ? -26 : (m === 2 ? 16 : 0);
     }
+    case 5: return (((x + y) % 7) < 2) ? 30 : -14;              // bois
+    case 6: return (y % 5 < 1) ? -22 : ((y % 5 === 2) ? 14 : 0); // berges
+    case 7: return ((x % 6 < 1) || (y % 6 < 1)) ? 22 : -6;       // urbain : trame de rues
     default: return 0;
   }
 }
@@ -31,7 +34,15 @@ function construireFond(){
   const d = imgData.data;
   for (let y = 0; y < RH; y++){
     for (let x = 0; x < RW; x++){
-      const i = y*RW + x, s = siteIdx[i], p = prov[s];
+      const i = y*RW + x, s = siteIdx[i];
+      if (s < 0){                                 // eau (carte réelle) : infranchissable
+        let r = 28, g = 52, b = 74;
+        if (((x + y) % 12) < 1){ r += 14; g += 20; b += 26; }  // moiré de surface
+        const o = i*4;
+        d[o] = r; d[o+1] = g; d[o+2] = b; d[o+3] = 255;
+        continue;
+      }
+      const p = prov[s];
       const t = TERRAINS[p.terrain].col;
       let r = t[0], g = t[1], b = t[2];
 
@@ -66,13 +77,15 @@ function construireFond(){
         r = r*0.35 + 224*0.65; g = g*0.35 + 165*0.65; b = b*0.35 + 60*0.65;
       }
 
-      // frontières
+      // frontières (un bord d'eau garde sa couleur : le contraste suffit)
       const droite = x+1 < RW ? siteIdx[i+1] : s;
       const bas    = y+1 < RH ? siteIdx[i+RW] : s;
       if (droite !== s || bas !== s){
-        const autre = prov[droite !== s ? droite : bas];
-        if (autre.proprio !== p.proprio){ r = 12; g = 12; b = 12; }
-        else { r *= 0.82; g *= 0.82; b *= 0.82; }
+        const autreIdx = droite !== s ? droite : bas;
+        if (autreIdx >= 0){
+          if (prov[autreIdx].proprio !== p.proprio){ r = 12; g = 12; b = 12; }
+          else { r *= 0.82; g *= 0.82; b *= 0.82; }
+        }
       }
       const o = i*4;
       d[o] = r; d[o+1] = g; d[o+2] = b; d[o+3] = 255;
@@ -247,7 +260,8 @@ export function dessiner(){
 // Légende des terrains : échantillon de motif + coût de marche, pour que le
 // joueur sache lire ce qu'il voit sur la carte
 function dessinerLegende(w, h){
-  const items = [0,1,2,3,4];
+  // seulement les terrains de la carte affichée (procédurale ou Angers)
+  const items = [...new Set(etat.prov.map(p => p.terrain))].sort((a,b) => a-b);
   const lh = 17, pad = 8, cw = 26, sh = 13;
   const bh = 15 + items.length*lh + pad;
   const bw = 140;
