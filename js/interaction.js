@@ -53,6 +53,12 @@ cv.addEventListener("pointerdown", e => {
 const bStep = document.getElementById("bStep");
 const bAuto = document.getElementById("bAuto");
 bStep.onclick = () => { if (!etat.fini && !etat.anim) tour(); };
+// Espace = « Jour suivant » — sauf sur un bouton focalisé, où la touche l'activerait déjà
+document.addEventListener("keydown", e => {
+  if (e.code !== "Space" || e.repeat || e.target.tagName === "BUTTON") return;
+  e.preventDefault();
+  if (!etat.fini && !etat.anim) tour();
+});
 bAuto.onclick = () => {
   etat.auto = !etat.auto;
   bAuto.setAttribute("aria-pressed", etat.auto);
