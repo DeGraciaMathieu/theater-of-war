@@ -25,6 +25,9 @@ export function ficheUnite(u){
   const prov = etat.prov;
   const r = ravitaillement(u);
   const o = etat.ordres.find(x => x.unite === u.id);
+  const t = TERRAINS[prov[u.prov].terrain];
+  // mêmes effets que la légende et le combat : ce que le terrain fait au corps
+  const effets = `${t.nom} · défense ×${t.def.toFixed(2)} · marche ${Math.max(1, Math.round(t.cout))} j`;
   elFiche.innerHTML = `
     <div style="font-weight:700;letter-spacing:.1em">${u.nom} · corps d'armée</div>
     <div style="font-family:'Share Tech Mono',monospace">${u.force.toLocaleString("fr-FR")} hommes</div>
@@ -32,8 +35,8 @@ export function ficheUnite(u){
     <div class="jauge"><i style="width:${u.moral}%;background:${u.moral>55?"#8fc47a":u.moral>28?"#e0a53c":"#d0503f"}"></i></div>
     <div style="font-size:12px;letter-spacing:.2em;color:var(--os-faible)">RAVITAILLEMENT</div>
     <div class="jauge"><i style="width:${Math.round(r*100)}%;background:${r>0?"#e0a53c":"#d0503f"}"></i></div>
-    <div>${r === 0 ? "<b style='color:#d0503f'>Coupé de l'arrière</b>"
-      : Math.round(r*100)+" % · terrain "+TERRAINS[prov[u.prov].terrain].nom
+    <div>${r === 0 ? "<b style='color:#d0503f'>Coupé de l'arrière</b> · " + effets
+      : Math.round(r*100)+" % · " + effets
         + (prov[u.prov].debit < 0.85 ? ` · <b style="color:var(--ambre)">axe saturé (${Math.round(prov[u.prov].debit*100)} %)</b>` : "")}</div>
     ${o ? `<div style="color:var(--ambre)">${
       o.transmis
@@ -51,5 +54,5 @@ export function ficheProv(p){
     <div class="jauge"><i style="width:${Math.round(p.supply*100)}%;background:#e0a53c"></i></div>
     <div style="font-size:12px;letter-spacing:.2em;color:var(--os-faible)">TRANSIT ${Math.round(p.charge*12)}k / ${Math.round(p.cap*12)}k</div>
     <div class="jauge"><i style="width:${Math.min(100,Math.round(p.charge/Math.max(p.cap,.01)*100))}%;background:${p.congestion<0.7?"#d0503f":p.congestion<0.95?"#e0a53c":"#8fc47a"}"></i></div>
-    <div>Défense ×${TERRAINS[p.terrain].def.toFixed(2)}</div>`;
+    <div>Défense ×${TERRAINS[p.terrain].def.toFixed(2)} · marche ${Math.max(1, Math.round(TERRAINS[p.terrain].cout))} j/province</div>`;
 }

@@ -47,11 +47,6 @@ function construireFond(){
       const t = TERRAINS[p.terrain].col;
       let r = t[0], g = t[1], b = t[2];
 
-      // motif propre à chaque terrain (trame façon carte d'état-major) — appliqué
-      // au fond, il reste visible même une fois la couleur de camp posée par-dessus
-      const mo = motifTerrain(p.terrain, x, y);
-      r += mo; g += mo; b += mo;
-
       if (p.proprio === ROUGE){                     // teinte de camp, pas écrasement
         r = r*0.58 + 190*0.42; g = g*0.58 + 58*0.42; b = b*0.58 + 52*0.42;
       } else if (p.proprio === BLEU){
@@ -63,6 +58,12 @@ function construireFond(){
       const k = vueSupply ? (p.proprio ? 0.30 + 0.70*p.supply : 0.5)
                           : 0.66 + 0.34*(p.proprio ? p.supply : 0.5);
       r *= k; g *= k; b *= k;
+
+      // motif du terrain (trame façon carte d'état-major) appliqué APRÈS la
+      // teinte de camp et le relief : à pleine amplitude, la signature du
+      // terrain reste lisible sous le bleu comme sous le rouge
+      const mo = motifTerrain(p.terrain, x, y);
+      r += mo; g += mo; b += mo;
 
       if (vueSupply && p.proprio){
         if (p.supply === 0){                        // relié ou non : rien n'arrive

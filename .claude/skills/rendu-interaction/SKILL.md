@@ -13,7 +13,7 @@ auto_invoke: true
 | Fond de carte | `construireFond` (`js/rendu.js`) : raster `RW×RH` dessiné pixel par pixel dans `etat.imgData`, mis en cache dans `etat.rasterCv` |
 | Invalidation | `etat.sale = true` → le fond est reconstruit à la frame suivante. **Obligatoire** après tout changement visible (propriétaire, survol, vue, supply…) |
 | Eau | `siteIdx[i] < 0` → bleu sombre + moiré ; bord d'eau sans trait de frontière |
-| Motifs de terrain | `motifTerrain(t, x, y)` — un `case` par terrain, réutilisé par la légende |
+| Motifs de terrain | `motifTerrain(t, x, y)` — un `case` par terrain, réutilisé par la légende. Appliqué **après** la teinte de camp et le relief de supply dans `construireFond` : à pleine amplitude, sinon la teinte écrase la signature du terrain |
 | Vue Ravitaillement | `etat.vueSupply` (bouton `#bSupply`) : surcouche dans `construireFond` — fond normal conservé, contraste de supply exagéré, rouge si supply nul, ambre si axe saturé |
 | Convois | `dessinerConvois` (vue Ravitaillement seulement) : points circulant sur chaque arête de `etat.arbreSupply`, nombre = `charge`, vitesse = `debit` — un axe saturé rampe |
 | Axe de ravitaillement | corps sélectionné → tracé vert pointillé vers son dépôt (`axeRavitaillement`), anneau rouge + % sur le goulot — dans `dessiner` |
