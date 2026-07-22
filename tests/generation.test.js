@@ -1,0 +1,32 @@
+import "./stub-dom.js";
+import test from "node:test";
+import assert from "node:assert/strict";
+import { etat } from "../js/etat.js";
+import { NB_PROV, ROUGE, BLEU } from "../js/config.js";
+import { genererCarte } from "../js/carte.js";
+
+test("genererCarte produit un théâtre jouable", () => {
+  genererCarte();
+
+  assert.equal(etat.prov.length, NB_PROV);
+
+  // adjacence symétrique : si a voit b, b voit a
+  for (const p of etat.prov)
+    for (const v of p.voisins)
+      assert.ok(etat.prov[v].voisins.includes(p.id), `adjacence asymétrique ${p.id}↔${v}`);
+
+  // chaque camp a ses 3 dépôts et son QG
+  for (const camp of [ROUGE, BLEU]){
+    assert.equal(etat.prov.filter(p => p.depot && p.proprio === camp).length, 3);
+    assert.equal(etat.prov.filter(p => p.qg && p.proprio === camp).length, 1);
+  }
+
+  // 8 corps par camp (7 au front + 1 réserve), chacun sur une province amie
+  for (const camp of [ROUGE, BLEU])
+    assert.equal(etat.unites.filter(u => u.camp === camp).length, 8);
+  for (const u of etat.unites)
+    assert.equal(etat.prov[u.prov].proprio, u.camp);
+
+  // le supply initial est calculé : les alentours des dépôts sont ravitaillés
+  assert.ok(etat.prov.some(p => p.supply > 0));
+});
