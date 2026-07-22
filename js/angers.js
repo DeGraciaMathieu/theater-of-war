@@ -7,7 +7,8 @@ import { journal } from "./hud.js";
 const BBOX = { s:47.446, w:-0.598, n:47.505, e:-0.512 };
 
 const MIROIRS = [
-  "/api/overpass",                                    // proxy Vercel (évite CORS), 404 en local
+  "/api/overpass",                                    // proxys Vercel (évitent CORS), 404 en local
+  "/api/overpass-kumi",
   "https://overpass-api.de/api/interpreter",
   "https://overpass.kumi.systems/api/interpreter",
 ];
@@ -26,22 +27,32 @@ function requeteOverpass(){
 
 export async function genererAngers(){
   journal("Interrogation d'OpenStreetMap (Angers)…");
-  let data = null;
-  for (const url of MIROIRS){
-    try{
-      const rep = await fetch(url, { method:"POST",
-        headers:{ "Content-Type":"text/plain" }, body: requeteOverpass() });
-      if (!rep.ok) throw new Error("HTTP " + rep.status);
-      data = await rep.json();
-      break;
-    }catch(e){ /* miroir suivant */ }
-  }
+  const data = await chargerOverpass();
   if (!data){
     journal("<b>Overpass injoignable</b> — repli sur une carte procédurale.");
     genererCarte();
     return;
   }
   construire(data);
+}
+
+// Les serveurs Overpass publics sont capricieux (406/429/5xx transitoires
+// selon le backend touché) : on refait une passe sur les miroirs avant
+// d'abandonner. Format formulaire « data= » exigé, en brut c'est un 406.
+async function chargerOverpass(){
+  for (let passe = 0; passe < 2; passe++){
+    if (passe) await new Promise(r => setTimeout(r, 1500));
+    for (const url of MIROIRS){
+      try{
+        const rep = await fetch(url, { method:"POST",
+          headers:{ "Content-Type":"application/x-www-form-urlencoded" },
+          body: "data=" + encodeURIComponent(requeteOverpass()) });
+        if (!rep.ok) throw new Error("HTTP " + rep.status);
+        return await rep.json();
+      }catch(e){ /* miroir suivant */ }
+    }
+  }
+  return null;
 }
 
 // ---- OSM → provinces au format du jeu ---------------------------------------

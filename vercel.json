@@ -1,5 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/overpass", "destination": "https://overpass-api.de/api/interpreter" }
+    { "source": "/api/overpass", "destination": "https://overpass-api.de/api/interpreter" },
+    { "source": "/api/overpass-kumi", "destination": "https://overpass.kumi.systems/api/interpreter" }
   ]
 }

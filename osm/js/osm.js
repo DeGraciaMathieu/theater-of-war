@@ -9,7 +9,8 @@ const elChargeTxt = document.getElementById("chargeTxt");
 
 // ---- requête Overpass -------------------------------------------------------
 const MIROIRS = [
-  "/api/overpass",                                    // proxy Vercel (évite CORS), 404 en local
+  "/api/overpass",                                    // proxys Vercel (évitent CORS), 404 en local
+  "/api/overpass-kumi",
   "https://overpass-api.de/api/interpreter",
   "https://overpass.kumi.systems/api/interpreter",
 ];
@@ -30,15 +31,21 @@ export async function chargerOSM(){
   elCharge.style.display = "flex";
   elEtat.textContent = "chargement…";
   let data = null, err = null;
-  for(const url of MIROIRS){
-    try{
-      elChargeTxt.textContent = `Interrogation d'Overpass (${url.split("/")[2]})…`;
-      const rep = await fetch(url, { method:"POST",
-        headers:{ "Content-Type":"text/plain" }, body: requeteOverpass() });
-      if(!rep.ok) throw new Error("HTTP "+rep.status);
-      data = await rep.json();
-      break;
-    }catch(e){ err = e; }
+  // serveurs Overpass capricieux (406/429/5xx transitoires) : deux passes
+  for(let passe = 0; passe < 2 && !data; passe++){
+    if(passe) await new Promise(r=>setTimeout(r,1500));
+    for(const url of MIROIRS){
+      try{
+        elChargeTxt.textContent = `Interrogation d'Overpass (${url.split("/")[2]})…`;
+        // Overpass n'accepte que le format formulaire « data= » (406 sinon)
+        const rep = await fetch(url, { method:"POST",
+          headers:{ "Content-Type":"application/x-www-form-urlencoded" },
+          body: "data=" + encodeURIComponent(requeteOverpass()) });
+        if(!rep.ok) throw new Error("HTTP "+rep.status);
+        data = await rep.json();
+        break;
+      }catch(e){ err = e; }
+    }
   }
   if(!data){
     elChargeTxt.textContent = "Overpass injoignable ("+(err?err.message:"?")+"). Bascule sur une carte procédurale.";
