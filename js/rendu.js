@@ -83,15 +83,27 @@ function construireFond(){
 
       if (s === survol){ r += 42; g += 42; b += 42; }
 
-      // province coupée de l'arrière : hachures ambre, visibles en toute vue
-      if (p.proprio && !p.relie && ((x + y) % 18) < 6){
-        r = r*0.35 + 224*0.65; g = g*0.35 + 165*0.65; b = b*0.35 + 60*0.65;
+      // province coupée de l'arrière : hachures ambre fines — assez pour se
+      // repérer, pas au point de dominer la carte quand la coupure est vaste
+      if (p.proprio && !p.relie && ((x + y) % 18) < 3){
+        r = r*0.6 + 224*0.4; g = g*0.6 + 165*0.4; b = b*0.6 + 60*0.4;
       }
 
-      // frontières (un bord d'eau garde sa couleur : le contraste suffit)
+      // frontières (un bord d'eau garde sa couleur : le contraste suffit).
+      // La ligne de front — camp contre camp — se marque des deux côtés de la
+      // limite (2 px) : c'est la lecture stratégique n°1 de la carte
       const droite = x+1 < RW ? siteIdx[i+1] : s;
       const bas    = y+1 < RH ? siteIdx[i+RW] : s;
-      if (droite !== s || bas !== s){
+      const gauche = x > 0 ? siteIdx[i-1] : s;
+      const haut   = y > 0 ? siteIdx[i-RW] : s;
+      let front = false;
+      for (const a of [droite, bas, gauche, haut]){
+        if (a === s || a < 0) continue;
+        const q = prov[a];
+        if (q.proprio && p.proprio && q.proprio !== p.proprio){ front = true; break; }
+      }
+      if (front){ r = 10; g = 10; b = 10; }
+      else if (droite !== s || bas !== s){
         const autreIdx = droite !== s ? droite : bas;
         if (autreIdx >= 0){
           if (prov[autreIdx].proprio !== p.proprio){ r = 12; g = 12; b = 12; }
@@ -341,7 +353,8 @@ function dessinerLegende(w, h){
   const lh = 21, pad = 9, cw = 30, sh = 16;
   const bh = 19 + items.length*lh + pad;
   const bw = 172;
-  const x0 = 8, y0 = Math.max(8, h - bh - 8);
+  // en bas à droite : le coin bas-gauche appartient au compteur d'effectifs
+  const x0 = w - bw - 8, y0 = Math.max(8, h - bh - 8);
   ctx.save();
   ctx.fillStyle = "rgba(14,16,14,.88)";
   ctx.fillRect(x0, y0, bw, bh);
