@@ -2,34 +2,40 @@ import { TERRAINS, PORTEE, ROUGE, BLEU } from "./config.js";
 import { etat, ennemiSur } from "./etat.js";
 import { journal } from "./hud.js";
 
+// Dijkstra naïf sur le réseau ami (assez rapide à cette échelle, lisible en
+// proto). Les prédécesseurs forment l'arbre de ravitaillement : c'est lui qui
+// porte ensuite la charge, donc la saturation des axes.
+function dijkstra(camp, sources){
+  const prov = etat.prov;
+  const dist = new Float32Array(prov.length).fill(Infinity);
+  const parent = new Int16Array(prov.length).fill(-1);
+  const ordre = [];
+  for (const id of sources) dist[id] = 0;
+  const vus = new Uint8Array(prov.length);
+  while (true){
+    let u = -1, bd = Infinity;
+    for (let i = 0; i < prov.length; i++)
+      if (!vus[i] && dist[i] < bd){ bd = dist[i]; u = i; }
+    if (u === -1) break;
+    vus[u] = 1; ordre.push(u);
+    for (const v of prov[u].voisins){
+      const pv = prov[v];
+      if (pv.proprio !== camp) continue;      // le corridor doit être ami…
+      if (ennemiSur(v, camp)) continue;       // …et libre d'ennemis
+      const c = TERRAINS[pv.terrain].cout * (pv.ville ? 0.55 : 1);
+      if (dist[u] + c < dist[v]){ dist[v] = dist[u] + c; parent[v] = u; }
+    }
+  }
+  return { dist, parent, ordre };
+}
+
 export function calculerSupply(){
   const prov = etat.prov;
   for (const p of prov) p.supply = 0;
   for (const camp of [ROUGE, BLEU]){
-    const dist = new Float32Array(prov.length).fill(Infinity);
-    const parent = new Int16Array(prov.length).fill(-1);
-    const ordre = [];
-    for (const p of prov){
-      if (p.proprio === camp && p.depot && !ennemiSur(p.id, camp)) dist[p.id] = 0;
-    }
-    // Dijkstra naïf (assez rapide à cette échelle, lisible en proto).
-    // Les prédécesseurs forment l'arbre de ravitaillement : c'est lui qui
-    // porte ensuite la charge, donc la saturation des axes.
-    const vus = new Uint8Array(prov.length);
-    while (true){
-      let u = -1, bd = Infinity;
-      for (let i = 0; i < prov.length; i++)
-        if (!vus[i] && dist[i] < bd){ bd = dist[i]; u = i; }
-      if (u === -1 || bd === Infinity) break;
-      vus[u] = 1; ordre.push(u);
-      for (const v of prov[u].voisins){
-        const pv = prov[v];
-        if (pv.proprio !== camp) continue;      // le corridor doit être ami…
-        if (ennemiSur(v, camp)) continue;       // …et libre d'ennemis
-        const c = TERRAINS[pv.terrain].cout * (pv.ville ? 0.55 : 1);
-        if (dist[u] + c < dist[v]){ dist[v] = dist[u] + c; parent[v] = u; }
-      }
-    }
+    const depots = prov.filter(p => p.proprio === camp && p.depot && !ennemiSur(p.id, camp));
+    const { dist, parent, ordre } = dijkstra(camp, depots.map(p => p.id));
+    etat.arbreSupply[camp] = parent;
 
     // 1. chaque corps fait remonter sa demande jusqu'au dépôt
     for (const p of prov) if (p.proprio === camp){ p.charge = 0; p.congestion = 1; p.debit = 0; }
@@ -124,6 +130,31 @@ function alerterSaturation(){
       journal(`<b>Axe saturé</b> province ${p.id} · ${Math.round(p.charge*12)}k desservis pour ${Math.round(p.cap*12)}k de capacité`);
     } else if (p.congestion > 0.8) p.alerte = false;
   }
+}
+
+// L'axe de ravitaillement d'un corps : remontée de l'arbre de supply jusqu'au
+// dépôt. Le goulot est le maillon qui fixe le débit (congestion minimale de la
+// chaîne) — null si rien ne sature : pas de maillon limitant à montrer.
+export function axeRavitaillement(u){
+  const prov = etat.prov;
+  const parent = etat.arbreSupply[u.camp];
+  if (!parent || prov[u.prov].proprio !== u.camp || !prov[u.prov].relie) return null;
+  const chemin = [];
+  let c = u.prov, garde = 0;
+  while (c !== -1 && garde++ < prov.length){ chemin.push(c); c = parent[c]; }
+  let goulot = chemin[0];
+  for (const id of chemin) if (prov[id].congestion < prov[goulot].congestion) goulot = id;
+  if (prov[goulot].congestion >= 1) goulot = null;
+  return { chemin, goulot };
+}
+
+// Provinces réellement à portée d'un dépôt : même métrique que calculerSupply,
+// mais depuis ce seul dépôt — sert à visualiser sa zone d'action au survol
+export function porteeDepuis(depotId){
+  const { dist } = dijkstra(etat.prov[depotId].proprio, [depotId]);
+  const provs = new Set();
+  for (let i = 0; i < dist.length; i++) if (dist[i] < PORTEE) provs.add(i);
+  return provs;
 }
 
 export function distQG(u){

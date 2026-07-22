@@ -5,6 +5,8 @@ export const etat = {
   jour: 1, auto: false, vueSupply: false,
   anim: 0,                       // progression 0→1 de l'animation d'un jour
   selection: null, survol: -1, fini: false, sale: true, apercu: null,
+  arbreSupply: {},               // parents du Dijkstra de supply, par camp — sert à tracer les axes
+  porteeDepot: null,             // { prov, provs } : zone d'action du dépôt survolé
   accu: 0, dernier: 0,
   nextId: 1,
 };

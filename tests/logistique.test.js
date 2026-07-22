@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { carteRuban, poserCorps } from "./outils.js";
 import { etat } from "../js/etat.js";
 import { ROUGE, BLEU } from "../js/config.js";
-import { calculerSupply } from "../js/logistique.js";
+import { calculerSupply, axeRavitaillement, porteeDepuis } from "../js/logistique.js";
 
 test("le ravitaillement décroît avec la distance au dépôt", () => {
   carteRuban();
@@ -28,6 +28,35 @@ test("une province sans corridor est coupée et forme une poche", () => {
   assert.equal(etat.poches.length, 1);
   assert.equal(etat.poches[0].camp, BLEU);
   assert.equal(etat.poches[0].hommes, isole.force);
+});
+
+test("l'axe de ravitaillement remonte au dépôt et pointe le maillon le plus serré", () => {
+  carteRuban();
+  const u = poserCorps(BLEU, 2, 240000);   // charge 20 pour 5 de cap en plaine : ça sature
+  calculerSupply();
+  const axe = axeRavitaillement(u);
+  assert.deepEqual(axe.chemin, [2, 1, 0]);
+  assert.notEqual(axe.goulot, null);
+  const min = Math.min(...axe.chemin.map(i => etat.prov[i].congestion));
+  assert.equal(etat.prov[axe.goulot].congestion, min);
+  assert.ok(min < 1);
+});
+
+test("sans saturation pas de goulot, sans corridor pas d'axe", () => {
+  carteRuban();
+  const leger = poserCorps(BLEU, 2, 10000);
+  calculerSupply();
+  assert.equal(axeRavitaillement(leger).goulot, null);
+  etat.prov[1].proprio = ROUGE;            // coupe le ruban bleu
+  calculerSupply();
+  assert.equal(axeRavitaillement(leger), null);
+});
+
+test("la portée d'un dépôt s'arrête au corridor ami", () => {
+  carteRuban();
+  assert.deepEqual([...porteeDepuis(0)].sort(), [0, 1, 2]);
+  poserCorps(ROUGE, 1, 10000);             // un ennemi sur le corridor le ferme
+  assert.deepEqual([...porteeDepuis(0)], [0]);
 });
 
 test("un dépôt occupé par l'ennemi ne ravitaille plus", () => {
