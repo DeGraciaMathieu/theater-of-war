@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>THÉÂTRE · carte réelle (OSM)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --encre:#0e100e; --os:#e8e4d6; --os-faible:#8d9088;
+    --ambre:#e0a53c; --trait:#3a423a; --eau:#2d4a63;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:var(--encre);color:var(--os);
+    font-family:"Saira Condensed",-apple-system,"Segoe UI Semibold",sans-serif;
+    display:flex;flex-direction:column;overflow:hidden}
+  .barre{display:flex;align-items:baseline;gap:12px;padding:8px 14px;
+    border-bottom:1px solid var(--trait);background:#12150f;flex:none}
+  .titre{font-weight:700;letter-spacing:.22em;text-transform:uppercase;font-size:14px}
+  .lieu{font-size:12px;letter-spacing:.14em;color:var(--os-faible)}
+  .etat{margin-left:auto;font-family:"Share Tech Mono",monospace;font-size:12px;color:var(--ambre)}
+  .scene{position:relative;flex:1;min-height:0}
+  canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+  .charge{position:absolute;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:14px;background:rgba(14,16,14,.9);
+    text-align:center;padding:24px}
+  .charge h2{font-weight:700;letter-spacing:.18em;text-transform:uppercase;font-size:15px}
+  .charge p{font-family:"Share Tech Mono",monospace;font-size:12px;color:var(--os-faible);max-width:440px;line-height:1.6}
+  .spin{width:34px;height:34px;border:3px solid var(--trait);border-top-color:var(--ambre);
+    border-radius:50%;animation:r 0.9s linear infinite}
+  @keyframes r{to{transform:rotate(360deg)}}
+  .hud{flex:none;border-top:1px solid var(--trait);background:#12150f;
+    display:flex;height:118px}
+  .bloc{padding:8px 12px;border-right:1px solid var(--trait);min-width:0;overflow:hidden}
+  .bloc h3{font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--os-faible);margin-bottom:6px;font-weight:500}
+  .cmd{display:flex;gap:6px;flex-wrap:wrap}
+  button{font-family:inherit;font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+    background:#1d221b;color:var(--os);border:1px solid var(--trait);padding:7px 11px;cursor:pointer}
+  button:hover{border-color:var(--ambre);color:var(--ambre)}
+  button[aria-pressed="true"]{background:var(--ambre);color:var(--encre);border-color:var(--ambre)}
+  .fiche{flex:1;font-size:13px;line-height:1.5}
+  .fiche .vide{color:var(--os-faible)}
+  .jauge{height:5px;background:#232823;margin:3px 0 7px;position:relative}
+  .jauge i{position:absolute;inset:0 auto 0 0;display:block}
+  .stats{width:min(30vw,280px);font-family:"Share Tech Mono",monospace;font-size:11px;
+    line-height:1.6;color:var(--os-faible);border-right:none}
+  .stats b{color:var(--os);font-weight:400}
+  @media (max-width:720px){.hud{flex-wrap:wrap;height:auto;max-height:44vh}
+    .stats{width:100%;border-top:1px solid var(--trait)}}
+</style>
+</head>
+<body>
+
+<div class="barre">
+  <span class="titre">Théâtre</span>
+  <span class="lieu">Angers · 47.48 N, 0.56 O — données © OpenStreetMap</span>
+  <span class="etat" id="etat">chargement…</span>
+</div>
+
+<div class="scene">
+  <canvas id="cv"></canvas>
+  <div class="charge" id="charge">
+    <div class="spin"></div>
+    <h2>Interrogation d'OpenStreetMap</h2>
+    <p id="chargeTxt">Récupération des routes, rivières et zones bâties autour d'Angers via l'API Overpass…</p>
+  </div>
+</div>
+
+<div class="hud">
+  <div class="bloc">
+    <h3>Affichage</h3>
+    <div class="cmd">
+      <button id="bTerrain" aria-pressed="true">Terrain</button>
+      <button id="bDebit" aria-pressed="false">Débit</button>
+      <button id="bRecharge">Recharger Angers</button>
+      <button id="bProc">Carte procédurale</button>
+    </div>
+  </div>
+  <div class="bloc fiche" id="fiche"><span class="vide">Touchez une province pour voir ce que la géographie réelle lui a donné.</span></div>
+  <div class="bloc stats" id="stats"></div>
+</div>
+
+<script>
+(() => {
+"use strict";
+
+// ---- zone : bounding box autour d'Angers ------------------------------------
+const BBOX = { s:47.446, w:-0.598, n:47.505, e:-0.512 };
+const RW = 900, RH = 560;
+const NB_PROV = 200;
+
+// terrains : mêmes rôles que le moteur de jeu (coût marche, débit, défense)
+const TERRAINS = [
+  { nom:"plaine",   cout:1.0, def:1.00, debit:5.0, col:[122,132, 84] },
+  { nom:"bocage",   cout:1.6, def:1.25, debit:3.6, col:[ 74,104, 58] },
+  { nom:"bois",     cout:2.1, def:1.55, debit:2.6, col:[ 52, 84, 48] },
+  { nom:"berges",   cout:2.6, def:1.15, debit:2.0, col:[ 78,110,116] },
+  { nom:"urbain",   cout:1.2, def:1.35, debit:6.5, col:[150,132,104] },
+];
+const T_PLAINE=0, T_BOCAGE=1, T_BOIS=2, T_BERGE=3, T_URBAIN=4;
+
+const cv = document.getElementById("cv");
+const ctx = cv.getContext("2d");
+const elEtat = document.getElementById("etat");
+const elCharge = document.getElementById("charge");
+const elChargeTxt = document.getElementById("chargeTxt");
+const elFiche = document.getElementById("fiche");
+const elStats = document.getElementById("stats");
+
+let prov = [], siteIdx = null, eauMask = null, routes = [], rivieres = [];
+let imgData = null, rasterCv = null, rasterCtx = null;
+let survol = -1, vueDebit = false, sale = true;
+let source = "—";
+
+const alea = (() => { let s = 20260722;
+  return () => (s = s*48271 % 2147483647) / 2147483647; })();
+
+// ---- projection équirectangulaire (correction de latitude) ------------------
+function proj(lat, lon){
+  return [ (lon-BBOX.w)/(BBOX.e-BBOX.w)*RW, (BBOX.n-lat)/(BBOX.n-BBOX.s)*RH ];
+}
+
+// ---- géométrie --------------------------------------------------------------
+function pip(x, y, poly){
+  let dedans=false;
+  for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+    const xi=poly[i][0],yi=poly[i][1],xj=poly[j][0],yj=poly[j][1];
+    if(((yi>y)!==(yj>y)) && x < (xj-xi)*(y-yi)/(yj-yi)+xi) dedans=!dedans;
+  }
+  return dedans;
+}
+function distSeg(px,py,ax,ay,bx,by){
+  const dx=bx-ax,dy=by-ay,l2=dx*dx+dy*dy;
+  let t=l2?((px-ax)*dx+(py-ay)*dy)/l2:0; t=Math.max(0,Math.min(1,t));
+  return Math.hypot(px-(ax+t*dx), py-(ay+t*dy));
+}
+
+// ---- requête Overpass -------------------------------------------------------
+const MIROIRS = [
+  "https://overpass-api.de/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
+];
+function requeteOverpass(){
+  const bb = `${BBOX.s},${BBOX.w},${BBOX.n},${BBOX.e}`;
+  return `[out:json][timeout:30];(
+    way["natural"="water"](${bb});
+    way["waterway"="riverbank"](${bb});
+    way["waterway"="river"](${bb});
+    way["highway"~"^(motorway|trunk|primary|secondary|tertiary)$"](${bb});
+    way["landuse"~"^(forest|residential|industrial|commercial|farmland|meadow)$"](${bb});
+    way["natural"="wood"](${bb});
+  );out geom;`;
+}
+
+async function chargerOSM(){
+  elCharge.style.display = "flex";
+  elEtat.textContent = "chargement…";
+  let data = null, err = null;
+  for(const url of MIROIRS){
+    try{
+      elChargeTxt.textContent = `Interrogation d'Overpass (${url.split("/")[2]})…`;
+      const rep = await fetch(url, { method:"POST",
+        headers:{ "Content-Type":"text/plain" }, body: requeteOverpass() });
+      if(!rep.ok) throw new Error("HTTP "+rep.status);
+      data = await rep.json();
+      break;
+    }catch(e){ err = e; }
+  }
+  if(!data){
+    elChargeTxt.textContent = "Overpass injoignable ("+(err?err.message:"?")+"). Bascule sur une carte procédurale.";
+    await new Promise(r=>setTimeout(r,1400));
+    genererProcedural();
+    return;
+  }
+  construireDepuisOSM(data);
+}
+
+// ---- OSM → graphe de provinces ----------------------------------------------
+function construireDepuisOSM(data){
+  elChargeTxt.textContent = "Transformation des données en provinces…";
+  const eaux=[], landuse=[]; routes=[]; rivieres=[];
+
+  for(const el of data.elements){
+    if(!el.geometry || el.geometry.length<2) continue;
+    const pts = el.geometry.map(g=>proj(g.lat,g.lon));
+    const t = el.tags||{};
+    if(t.natural==="water"||t.waterway==="riverbank") eaux.push(pts);
+    else if(t.waterway==="river") rivieres.push(pts);
+    else if(t.highway) routes.push({ rang: rangRoute(t.highway), pts });
+    else if(t.landuse||t.natural==="wood")
+      landuse.push({ type:t.landuse||t.natural, poly:pts });
+  }
+
+  // masque d'eau : rasterisation des polygones d'eau
+  eauMask = new Uint8Array(RW*RH);
+  for(const poly of eaux) remplirPolygone(poly, eauMask);
+  // les rivières linéaires « épaississent » le masque
+  for(const r of rivieres) traceLarge(r, eauMask, 3);
+
+  source = `OSM · ${eaux.length} plans d'eau, ${routes.length} routes, ${landuse.length} zones`;
+  genererProvinces(landuse);
+  finaliser();
+}
+
+function rangRoute(h){
+  return { motorway:4, trunk:4, primary:3, secondary:2, tertiary:1 }[h] || 1;
+}
+
+// rasterisation d'un polygone plein (scanline) dans un masque
+function remplirPolygone(poly, mask){
+  let minY=RH, maxY=0;
+  for(const [,y] of poly){ minY=Math.min(minY,y); maxY=Math.max(maxY,y); }
+  minY=Math.max(0,Math.floor(minY)); maxY=Math.min(RH-1,Math.ceil(maxY));
+  for(let y=minY;y<=maxY;y++){
+    const nx=[];
+    for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+      const yi=poly[i][1],yj=poly[j][1];
+      if((yi>y)!==(yj>y)){
+        const xi=poly[i][0],xj=poly[j][0];
+        nx.push(xi+(y-yi)/(yj-yi)*(xj-xi));
+      }
+    }
+    nx.sort((a,b)=>a-b);
+    for(let k=0;k+1<nx.length;k+=2){
+      const x0=Math.max(0,Math.ceil(nx[k])), x1=Math.min(RW-1,Math.floor(nx[k+1]));
+      for(let x=x0;x<=x1;x++) mask[y*RW+x]=1;
+    }
+  }
+}
+function traceLarge(pts, mask, r){
+  for(let i=0;i<pts.length-1;i++){
+    const [ax,ay]=pts[i],[bx,by]=pts[i+1];
+    const n=Math.max(1,Math.hypot(bx-ax,by-ay)|0);
+    for(let s=0;s<=n;s++){
+      const x=ax+(bx-ax)*s/n|0, y=ay+(by-ay)*s/n|0;
+      for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){
+        const px=x+dx,py=y+dy;
+        if(px>=0&&py>=0&&px<RW&&py<RH&&dx*dx+dy*dy<=r*r) mask[py*RW+px]=1;
+      }
+    }
+  }
+}
+
+// semis de provinces sur la terre ferme uniquement
+function genererProvinces(landuse){
+  prov = [];
+  const sites=[];
+  let essais=0;
+  while(sites.length<NB_PROV && essais<NB_PROV*40){
+    essais++;
+    // échantillonnage best-candidate pour des cellules régulières
+    let best=null, bd=-1;
+    for(let k=0;k<10;k++){
+      const p={x:alea()*RW,y:alea()*RH};
+      if(eauMask && eauMask[(p.y|0)*RW+(p.x|0)]) continue;   // pas dans l'eau
+      let d=Infinity;
+      for(const s of sites) d=Math.min(d,(s.x-p.x)**2+(s.y-p.y)**2);
+      if(d>bd){bd=d;best=p;}
+    }
+    if(best) sites.push(best);
+  }
+
+  sites.forEach((s,i)=>{
+    let terrain = terrainDepuisLanduse(s.x, s.y, landuse);
+    // proximité de l'eau → berges
+    if(terrain!==T_URBAIN && prochEau(s.x,s.y)<10) terrain=T_BERGE;
+    prov.push({ id:i, x:s.x, y:s.y, cx:s.x, cy:s.y, px:0,
+      terrain, voisins:[], routeRang:0, debit:0, franchit:false });
+  });
+
+  rasteriser(landuse);
+  // proximité route → rang logistique de la province
+  for(const p of prov){
+    let meilleur=0;
+    for(const r of routes){
+      for(let i=0;i<r.pts.length-1;i++){
+        if(distSeg(p.cx,p.cy,r.pts[i][0],r.pts[i][1],r.pts[i+1][0],r.pts[i+1][1])<16){
+          meilleur=Math.max(meilleur,r.rang); break;
+        }
+      }
+    }
+    p.routeRang=meilleur;
+  }
+  calculerDebit();
+}
+
+function terrainDepuisLanduse(x,y,landuse){
+  for(const l of landuse){
+    if(pip(x,y,l.poly)){
+      switch(l.type){
+        case "forest": case "wood":      return T_BOIS;
+        case "residential": case "industrial": case "commercial": return T_URBAIN;
+        case "farmland":                 return T_PLAINE;
+        case "meadow":                   return T_BOCAGE;
+      }
+    }
+  }
+  return T_BOCAGE; // hors zone décrite : bocage par défaut (campagne angevine)
+}
+function prochEau(x,y){
+  if(!eauMask) return 999;
+  for(let rad=1;rad<=12;rad++)
+    for(let a=0;a<8;a++){
+      const px=(x+Math.cos(a/8*6.28)*rad)|0, py=(y+Math.sin(a/8*6.28)*rad)|0;
+      if(px>=0&&py>=0&&px<RW&&py<RH&&eauMask[py*RW+px]) return rad;
+    }
+  return 999;
+}
+
+// rasterisation Voronoï + adjacence (rivière = frontière franchissable notée)
+function rasteriser(){
+  const CELL=52, GW=Math.ceil(RW/CELL), GH=Math.ceil(RH/CELL);
+  const cases=Array.from({length:GW*GH},()=>[]);
+  prov.forEach(p=>{
+    const gx=Math.min(GW-1,(p.x/CELL)|0), gy=Math.min(GH-1,(p.y/CELL)|0);
+    cases[gy*GW+gx].push(p.id);
+  });
+  siteIdx=new Int16Array(RW*RH).fill(-1);
+  for(let y=0;y<RH;y++){
+    const gy=Math.min(GH-1,(y/CELL)|0);
+    for(let x=0;x<RW;x++){
+      if(eauMask && eauMask[y*RW+x]){ siteIdx[y*RW+x]=-1; continue; }  // eau
+      const gx=Math.min(GW-1,(x/CELL)|0);
+      let best=-1,bd=Infinity;
+      for(let ry=2;ry<=5&&best===-1;ry++)
+        for(let cy=Math.max(0,gy-ry);cy<=Math.min(GH-1,gy+ry);cy++)
+          for(let cx=Math.max(0,gx-ry);cx<=Math.min(GW-1,gx+ry);cx++)
+            for(const id of cases[cy*GW+cx]){
+              const d=(prov[id].x-x)**2+(prov[id].y-y)**2;
+              if(d<bd){bd=d;best=id;}
+            }
+      if(best===-1) for(let i=0;i<prov.length;i++){
+        const d=(prov[i].x-x)**2+(prov[i].y-y)**2; if(d<bd){bd=d;best=i;}
+      }
+      siteIdx[y*RW+x]=best;
+      if(best>=0){ const p=prov[best]; p.cx+=x; p.cy+=y; p.px++; }
+    }
+  }
+  for(const p of prov){ p.cx=p.cx/(p.px+1); p.cy=p.cy/(p.px+1); }
+
+  // adjacence : deux provinces voisines ; si séparées par de l'eau → franchissement
+  const vus=new Set(), eauEntre=new Map();
+  for(let y=0;y<RH;y++)for(let x=0;x<RW;x++){
+    const a=siteIdx[y*RW+x]; if(a<0) continue;
+    for(const [dx,dy] of [[1,0],[0,1]]){
+      const nx=x+dx,ny=y+dy; if(nx>=RW||ny>=RH) continue;
+      let b=siteIdx[ny*RW+nx];
+      if(b===a) continue;
+      if(b<0){                                   // on longe de l'eau : cherche l'autre rive
+        continue;
+      }
+      const k=a<b?a*1e4+b:b*1e4+a;
+      if(!vus.has(k)){ vus.add(k); prov[a].voisins.push(b); prov[b].voisins.push(a); }
+    }
+  }
+  // franchissements de rivière : provinces séparées uniquement par de l'eau,
+  // reliées seulement là où une route traverse (les ponts)
+  detecterPonts();
+}
+
+function detecterPonts(){
+  // pour chaque route, marquer les provinces qu'elle relie de part et d'autre d'une eau
+  for(const r of routes){
+    let prec=-1;
+    for(const [x,y] of r.pts){
+      const id = (x>=0&&y>=0&&x<RW&&y<RH) ? siteIdx[(y|0)*RW+(x|0)] : -1;
+      if(id>=0){
+        if(prec>=0 && prec!==id && !prov[id].voisins.includes(prec)){
+          prov[id].voisins.push(prec); prov[prec].voisins.push(id);
+          prov[id].franchit=true; prov[prec].franchit=true;   // reliés par un pont
+        }
+        prec=id;
+      }
+    }
+  }
+}
+
+// ---- débit logistique (mêmes principes que le jeu) --------------------------
+function calculerDebit(){
+  for(const p of prov)
+    p.debit = TERRAINS[p.terrain].debit
+      * (1 + p.routeRang*0.6)                     // une grande route booste le débit
+      * (p.terrain===T_URBAIN?1.4:1);
+}
+
+// ---- repli procédural (si Overpass échoue) ----------------------------------
+function genererProcedural(){
+  source = "procédural (repli)";
+  eauMask = new Uint8Array(RW*RH);
+  // une « rivière » sinueuse
+  rivieres=[]; const rv=[];
+  for(let t=0;t<=1;t+=0.02){
+    const x=t*RW, y=RH*0.5 + Math.sin(t*7)*90 + (t-0.5)*80;
+    rv.push([x,y]);
+  }
+  rivieres.push(rv); traceLarge(rv, eauMask, 4);
+  routes=[{rang:3, pts:[[0,RH*0.3],[RW*0.5,RH*0.45],[RW,RH*0.6]]}];
+  const landuse=[];
+  prov=[];
+  const sites=[]; let e=0;
+  while(sites.length<NB_PROV && e<NB_PROV*40){ e++;
+    const p={x:alea()*RW,y:alea()*RH};
+    if(eauMask[(p.y|0)*RW+(p.x|0)]) continue;
+    sites.push(p);
+  }
+  sites.forEach((s,i)=>{
+    let terrain = alea()<0.5?T_BOCAGE:(alea()<0.5?T_BOIS:T_PLAINE);
+    if(prochEau(s.x,s.y)<10) terrain=T_BERGE;
+    prov.push({id:i,x:s.x,y:s.y,cx:s.x,cy:s.y,px:0,terrain,voisins:[],routeRang:0,debit:0,franchit:false});
+  });
+  rasteriser(landuse);
+  for(const p of prov){
+    let m=0;
+    for(const r of routes) for(let i=0;i<r.pts.length-1;i++)
+      if(distSeg(p.cx,p.cy,r.pts[i][0],r.pts[i][1],r.pts[i+1][0],r.pts[i+1][1])<16) m=Math.max(m,r.rang);
+    p.routeRang=m;
+  }
+  calculerDebit();
+  finaliser();
+}
+
+function finaliser(){
+  rasterCv=document.createElement("canvas");
+  rasterCv.width=RW; rasterCv.height=RH;
+  rasterCtx=rasterCv.getContext("2d");
+  imgData=rasterCtx.createImageData(RW,RH);
+  sale=true;
+  elCharge.style.display="none";
+  elEtat.textContent = source;
+  const t=n=>prov.filter(p=>p.terrain===n).length;
+  elStats.innerHTML =
+    `<div><b>${prov.length}</b> provinces générées</div>`+
+    `<div>source : <b>${source.split(" ·")[0]}</b></div>`+
+    `<div style="margin-top:4px">plaine <b>${t(0)}</b> · bocage <b>${t(1)}</b> · bois <b>${t(2)}</b></div>`+
+    `<div>berges <b>${t(3)}</b> · urbain <b>${t(4)}</b></div>`+
+    `<div style="margin-top:4px">routes : <b>${routes.length}</b> axes · ${prov.filter(p=>p.franchit).length} ponts</div>`;
+}
+
+// ---- motifs de terrain ------------------------------------------------------
+function motif(t,x,y){
+  switch(t){
+    case T_PLAINE: return ((x*5+y*11)%23===0)?8:0;
+    case T_BOCAGE: return ((x*7+y*3)%9<2)?26:-8;
+    case T_BOIS:   return (((x+y)%7)<2)?30:-14;
+    case T_BERGE:  return (y%5<1)?-22:((y%5===2)?14:0);
+    case T_URBAIN: return ((x%6<1)||(y%6<1))?22:-6;   // trame de rues
+    default: return 0;
+  }
+}
+
+// ---- rendu ------------------------------------------------------------------
+function construireFond(){
+  const d=imgData.data;
+  for(let y=0;y<RH;y++)for(let x=0;x<RW;x++){
+    const i=y*RW+x, s=siteIdx[i];
+    let r,g,b;
+    if(s<0){                                    // eau
+      const w = eauMask && eauMask[i];
+      r=28; g=52; b=74;
+      if(((x+y)%12)<1){ r+=14; g+=20; b+=26; }  // moiré de surface
+    }else{
+      const p=prov[s], t=TERRAINS[p.terrain].col, mo=motif(p.terrain,x,y);
+      r=t[0]+mo; g=t[1]+mo; b=t[2]+mo;
+      if(vueDebit){
+        const v=Math.min(1,p.debit/9);
+        r=26+v*60; g=26+v*150; b=26+v*80;
+        if(p.routeRang>=3){ r=r*0.5+224*0.5; g=g*0.5+165*0.5; b=b*0.5+60*0.5; }
+      }
+      if(s===survol){ r+=40; g+=40; b+=40; }
+      // frontières
+      const dr=x+1<RW?siteIdx[i+1]:s, ba=y+1<RH?siteIdx[i+RW]:s;
+      if(dr!==s||ba!==s){
+        const autre = (dr!==s?dr:ba);
+        if(autre<0){ /* bord d'eau : garder */ }
+        else { r*=0.8; g*=0.8; b*=0.8; }
+      }
+    }
+    const o=i*4; d[o]=r; d[o+1]=g; d[o+2]=b; d[o+3]=255;
+  }
+  rasterCtx.putImageData(imgData,0,0);
+}
+
+function dessiner(){
+  const w=cv.clientWidth,h=cv.clientHeight,dpr=Math.min(2,devicePixelRatio||1);
+  if(cv.width!==w*dpr||cv.height!==h*dpr){cv.width=w*dpr;cv.height=h*dpr;}
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,w,h);
+  if(!siteIdx){ requestAnimationFrame(dessiner); return; }
+  if(sale){ construireFond(); sale=false; }
+  ctx.imageSmoothingEnabled=true;
+  ctx.drawImage(rasterCv,0,0,w,h);
+  const sx=w/RW, sy=h/RH;
+
+  // routes réelles par-dessus
+  for(const r of routes){
+    ctx.strokeStyle = r.rang>=3 ? "rgba(224,165,60,.85)" : "rgba(224,165,60,.4)";
+    ctx.lineWidth = r.rang>=3 ? 2.4 : 1.2;
+    ctx.beginPath();
+    r.pts.forEach(([x,y],k)=> k?ctx.lineTo(x*sx,y*sy):ctx.moveTo(x*sx,y*sy));
+    ctx.stroke();
+  }
+  // ponts (provinces reliées par franchissement)
+  for(const p of prov){
+    if(!p.franchit) continue;
+    ctx.fillStyle="#e0a53c";
+    ctx.beginPath(); ctx.arc(p.cx*sx,p.cy*sy,2.6,0,7); ctx.fill();
+  }
+
+  dessinerLegende(w,h);
+  requestAnimationFrame(dessiner);
+}
+
+function dessinerLegende(w,h){
+  const items=[T_PLAINE,T_BOCAGE,T_BOIS,T_BERGE,T_URBAIN];
+  const lh=17,pad=8,cw=26,sh=13;
+  const bh=15+items.length*lh+pad, bw=138, x0=8, y0=Math.max(8,h-bh-8);
+  ctx.save();
+  ctx.fillStyle="rgba(14,16,14,.88)"; ctx.fillRect(x0,y0,bw,bh);
+  ctx.strokeStyle="#3a423a"; ctx.lineWidth=1; ctx.strokeRect(x0,y0,bw,bh);
+  ctx.fillStyle="#8d9088"; ctx.font="700 9px 'Saira Condensed',sans-serif"; ctx.textAlign="left";
+  ctx.fillText(vueDebit?"DÉBIT LOGISTIQUE":"TERRAIN · COÛT MARCHE",x0+pad,y0+11);
+  items.forEach((t,k)=>{
+    const yy=y0+15+k*lh;
+    const col=TERRAINS[t].col;
+    for(let py=0;py<sh;py++)for(let px=0;px<cw;px++){
+      const mo=motif(t,px,py);
+      ctx.fillStyle=`rgb(${Math.max(0,col[0]+mo)},${Math.max(0,col[1]+mo)},${Math.max(0,col[2]+mo)})`;
+      ctx.fillRect(x0+pad+px,yy+py,1,1);
+    }
+    ctx.strokeStyle="#0e100e"; ctx.strokeRect(x0+pad,yy,cw,sh);
+    ctx.fillStyle="#e8e4d6"; ctx.font="11px 'Saira Condensed',sans-serif";
+    ctx.fillText(`${TERRAINS[t].nom} ×${Math.max(1,Math.round(TERRAINS[t].cout))}`,x0+pad+cw+7,yy+10);
+  });
+  ctx.restore();
+}
+
+// ---- interaction ------------------------------------------------------------
+function provSous(ev){
+  const r=cv.getBoundingClientRect();
+  const x=Math.floor((ev.clientX-r.left)/r.width*RW);
+  const y=Math.floor((ev.clientY-r.top)/r.height*RH);
+  if(x<0||y<0||x>=RW||y>=RH||!siteIdx) return -1;
+  return siteIdx[y*RW+x];
+}
+cv.addEventListener("pointermove",e=>{ const s=provSous(e); if(s!==survol){survol=s;sale=true;} });
+cv.addEventListener("pointerdown",e=>{
+  const id=provSous(e);
+  if(id<0){ elFiche.innerHTML='<span class="vide">De l\'eau — infranchissable hors des ponts.</span>'; return; }
+  const p=prov[id];
+  const dm=Math.max(1,Math.round(TERRAINS[p.terrain].cout));
+  elFiche.innerHTML=
+    `<div style="font-weight:700;letter-spacing:.1em">Province ${p.id} · ${TERRAINS[p.terrain].nom}</div>`+
+    `<div>coût de marche ×${dm} · défense ×${TERRAINS[p.terrain].def.toFixed(2)}</div>`+
+    `<div style="font-size:10px;letter-spacing:.2em;color:var(--os-faible);margin-top:5px">DÉBIT LOGISTIQUE</div>`+
+    `<div class="jauge"><i style="width:${Math.min(100,p.debit/9*100)}%;background:#e0a53c"></i></div>`+
+    `<div>${p.debit.toFixed(1)} pts${p.routeRang>=3?' · <b style="color:var(--ambre)">sur grand axe</b>':p.routeRang?' · route secondaire':''}</div>`+
+    `<div>${p.franchit?'<b style="color:var(--ambre)">relié par un pont</b> — coupez-le pour isoler la rive':`${p.voisins.length} provinces voisines`}</div>`;
+});
+
+document.getElementById("bTerrain").onclick=()=>{ vueDebit=false; sale=true;
+  document.getElementById("bTerrain").setAttribute("aria-pressed",true);
+  document.getElementById("bDebit").setAttribute("aria-pressed",false); };
+document.getElementById("bDebit").onclick=()=>{ vueDebit=true; sale=true;
+  document.getElementById("bDebit").setAttribute("aria-pressed",true);
+  document.getElementById("bTerrain").setAttribute("aria-pressed",false); };
+document.getElementById("bRecharge").onclick=()=>{ siteIdx=null; chargerOSM(); };
+document.getElementById("bProc").onclick=()=>{ siteIdx=null; elCharge.style.display="none"; genererProcedural(); };
+
+// ---- lancement --------------------------------------------------------------
+requestAnimationFrame(dessiner);
+chargerOSM();
+})();
+</script>
+</body>
+</html>
