@@ -47,10 +47,14 @@ function construireFond(){
       const t = TERRAINS[p.terrain].col;
       let r = t[0], g = t[1], b = t[2];
 
-      if (p.proprio === ROUGE){                     // teinte de camp, pas écrasement
-        r = r*0.58 + 190*0.42; g = g*0.58 + 58*0.42; b = b*0.58 + 52*0.42;
-      } else if (p.proprio === BLEU){
-        r = r*0.58 + 66*0.42;  g = g*0.58 + 112*0.42; b = b*0.58 + 158*0.42;
+      // surimpression de camp débrayable : sans elle le terrain apparaît nu,
+      // les frontières suffisent alors à lire le front
+      if (etat.teinteCamps){
+        if (p.proprio === ROUGE){                   // teinte de camp, pas écrasement
+          r = r*0.58 + 190*0.42; g = g*0.58 + 58*0.42; b = b*0.58 + 52*0.42;
+        } else if (p.proprio === BLEU){
+          r = r*0.58 + 66*0.42;  g = g*0.58 + 112*0.42; b = b*0.58 + 158*0.42;
+        }
       }
       // relief : les provinces mal ravitaillées s'assombrissent. La vue
       // Ravitaillement garde ce même fond (terrain, camps, front) et se

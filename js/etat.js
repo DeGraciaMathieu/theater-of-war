@@ -3,6 +3,7 @@ export const etat = {
   prov: [], unites: [], ordres: [], poches: [], batailles: [],
   siteIdx: null, imgData: null, rasterCv: null, rasterCtx: null,
   jour: 1, auto: false, vueSupply: false,
+  teinteCamps: true,             // surimpression rouge/bleu des provinces (débrayable)
   anim: 0,                       // progression 0→1 de l'animation d'un jour
   selection: null, survol: -1, fini: false, sale: true, apercu: null,
   arbreSupply: {},               // parents du Dijkstra de supply, par camp — sert à tracer les axes

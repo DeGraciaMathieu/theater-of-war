@@ -78,6 +78,11 @@ bSupply.onclick = () => {
   etat.vueSupply = !etat.vueSupply; etat.sale = true;
   bSupply.setAttribute("aria-pressed", etat.vueSupply);
 };
+const bCamps = document.getElementById("bCamps");
+bCamps.onclick = () => {
+  etat.teinteCamps = !etat.teinteCamps; etat.sale = true;
+  bCamps.setAttribute("aria-pressed", etat.teinteCamps);
+};
 document.getElementById("bReset").onclick = () => {
   elJournal.innerHTML = ""; genererCarte();
   etat.auto = false; bAuto.setAttribute("aria-pressed", false); bAuto.textContent = "Lecture auto";
