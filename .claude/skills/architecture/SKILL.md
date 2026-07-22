@@ -21,9 +21,9 @@ App statique sans build : `index.html` charge `js/main.js` en module ES ; tout l
 | `combat.js` | `combat`, `attrition` (+ `detruire`/`nettoyer` privés) | hud (journal) |
 | `ia.js` | `iaRouge` : ordres du camp rouge | ordres |
 | `tour.js` | `tour` (séquence d'un jour), `verifierFin` — touche `#date`, `#bStep`, `#bAuto` | logistique, ia, ordres, combat, hud |
-| `rendu.js` | `dessiner` : fond raster en cache (`etat.sale`), pions, itinéraires, batailles, légende | ordres (marche) |
+| `rendu.js` | `dessiner` : fond raster en cache (`etat.sale`), pions, itinéraires, axes de supply, batailles, légende | ordres (marche), logistique (axeRavitaillement) |
 | `hud.js` | `journal`, `majCompteurs`, `ficheUnite`/`ficheProv`/`ficheVide` | — |
-| `interaction.js` | Souris (survol, sélection, aperçu d'ordre) + boutons du HUD | ordres, hud, carte, angers, tour |
+| `interaction.js` | Souris (survol, sélection, aperçu d'ordre, portée de dépôt) + boutons du HUD | ordres, logistique, hud, carte, angers, tour |
 | `main.js` | Boucle `requestAnimationFrame` (animation des pions, cadence auto) + lancement | tous |
 
 Règle de sens des dépendances : la logique ne connaît le DOM qu'à travers `journal()` ; `etat.js` et `config.js` ne dépendent de rien.

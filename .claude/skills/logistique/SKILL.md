@@ -24,8 +24,10 @@ Cœur du jeu : `calculerSupply()` (`js/logistique.js`), appelée 2× par tour (`
 | Poche | `detecterPoches` : composante connexe de provinces `!relie` d'un camp, avec des corps dedans ; journalisée à la bascule (`u.coupe`) |
 | Alerte de saturation | `alerterSaturation` : camp BLEU, `congestion < 0.6` et `charge > 0.5` |
 | Distance au QG | `distQG(u)` (BFS en provinces amies) — sert à la latence des ordres (`ordres.js`) |
+| Axe d'un corps | `axeRavitaillement(u)` : remontée de `etat.arbreSupply[camp]` (parents du Dijkstra, conservés par `calculerSupply`) jusqu'au dépôt + `goulot` (maillon de congestion minimale, `null` si rien ne sature ou corps coupé) |
+| Portée d'un dépôt | `porteeDepuis(depotId)` : Dijkstra mono-source, `Set` des provinces à `dist < PORTEE` — la zone d'action affichée au survol |
 
-Consommateurs du supply : `ravitaillement(u)` (`js/etat.js`) → puissance de combat (`combat.js`), palier de moral et attrition (`attrition`), latence des ordres (`estimerOrdre`), teintes de la carte (`rendu.js`, vue Ravitaillement).
+Consommateurs du supply : `ravitaillement(u)` (`js/etat.js`) → puissance de combat (`combat.js`), palier de moral et attrition (`attrition`), latence des ordres (`estimerOrdre`), teintes de la carte et axe du corps sélectionné (`rendu.js`, vue Ravitaillement), portée de dépôt au survol (`interaction.js`).
 
 ## Modifier la logistique
 

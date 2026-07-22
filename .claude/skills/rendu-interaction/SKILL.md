@@ -14,7 +14,9 @@ auto_invoke: true
 | Invalidation | `etat.sale = true` → le fond est reconstruit à la frame suivante. **Obligatoire** après tout changement visible (propriétaire, survol, vue, supply…) |
 | Eau | `siteIdx[i] < 0` → bleu sombre + moiré ; bord d'eau sans trait de frontière |
 | Motifs de terrain | `motifTerrain(t, x, y)` — un `case` par terrain, réutilisé par la légende |
-| Vue Ravitaillement | `etat.vueSupply` (bouton `#bSupply`) : teintes par supply/congestion dans `construireFond` |
+| Vue Ravitaillement | `etat.vueSupply` (bouton `#bSupply`) : surcouche dans `construireFond` — fond normal conservé, contraste de supply exagéré, rouge si supply nul, ambre si axe saturé |
+| Axe de ravitaillement | corps sélectionné → tracé vert pointillé vers son dépôt (`axeRavitaillement`), anneau rouge + % sur le goulot — dans `dessiner` |
+| Portée de dépôt | survol d'un dépôt (`pointermove`, `interaction.js`) → `etat.porteeDepot` via `porteeDepuis` ; provinces à portée éclaircies dans `construireFond` |
 | Pions | Dessinés chaque frame dans `dessiner` : position animée `u.ax`/`u.ay`, force en k, jauge de moral, liseré pulsant si encerclé |
 | Animation d'un jour | `main.js` : `etat.anim` 0→1 sur `DUREE_ANIM = 480 ms` (ease in-out), départ `u.dx`/`u.dy` posé par `tour()` |
 | Lecture auto | `main.js` : un `tour()` toutes les 260 ms si `etat.auto`, en laissant finir les marqueurs de bataille |
