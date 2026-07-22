@@ -1,0 +1,3 @@
+# réglages Claude Code locaux (permissions machine) — settings.json, lui, est versionné
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
