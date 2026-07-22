@@ -9,6 +9,7 @@ const elChargeTxt = document.getElementById("chargeTxt");
 
 // ---- requête Overpass -------------------------------------------------------
 const MIROIRS = [
+  "/api/overpass",                                    // proxy Vercel (évite CORS), 404 en local
   "https://overpass-api.de/api/interpreter",
   "https://overpass.kumi.systems/api/interpreter",
 ];
