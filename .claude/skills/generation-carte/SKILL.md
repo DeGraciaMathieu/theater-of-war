@@ -21,7 +21,7 @@ Deux origines, un seul format de sortie : des provinces dans `etat.prov` + un ra
 | Relief procédural | Bruit à bosses + seuils par quantiles dans `genererCarte` (`js/carte.js`) |
 | Terrain OSM | `terrainDepuisLanduse` (`js/angers.js`) : forest/wood→bois, residential/industrial/commercial→urbain, farmland→plaine, meadow→bocage ; proximité d'eau→berges |
 | Nœud routier (`ville`) | Procédural : `alea() < 0.13` ; Angers : province à < 16 px d'une route de rang ≥ 3 |
-| Camps, dépôts, QG, corps initiaux | `installerTheatre` + `poserBase` (`js/carte.js`) : partage NE/SO, 3 dépôts + 1 QG + 8 corps par camp |
+| Camps, dépôts, QG, corps initiaux | `installerTheatre` + `poserBase` (`js/carte.js`) : partage NE/SO, 2 dépôts d'arrière + 1 dépôt avancé (à `AVANCE_DEPOT` du chemin coin → centre) + 1 QG + 8 corps par camp |
 | Requête Overpass | `chargerOverpass` (`js/angers.js`) : POST `data=` urlencodé, 4 miroirs (2 proxys Vercel + 2 directs), 2 passes |
 
 ## Ajouter un nouveau terrain

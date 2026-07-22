@@ -14,12 +14,12 @@ Cœur du jeu : `calculerSupply()` (`js/logistique.js`), appelée 2× par tour (`
 |---|---|
 | Source de ravitaillement | Province avec `depot: true`, amie et libre d'ennemis (`ennemiSur`) — `dist = 0` au départ du Dijkstra |
 | Distance logistique | Dijkstra sur `voisins`, coût `TERRAINS[terrain].cout × (ville ? 0.55 : 1)` ; corridor exclusivement ami et sans ennemi |
-| Portée | `PORTEE = 15` (`js/config.js`) : supply de base `max(0, 1 - dist/PORTEE)` |
+| Portée | `PORTEE = 15` (`js/config.js`) : supply de base `√(max(0, 1 - dist/PORTEE))` — courbe douce : le milieu de portée reste vivable, zéro au-delà de `PORTEE` |
 | Demande (`charge`) | Chaque corps remonte `force / 12000` le long des `parent[]` du Dijkstra jusqu'au dépôt |
 | Capacité (`cap`) | `TERRAINS[].debit × (ville ? 2.2 : 1) × (depot ? 3 : 1)` |
 | Congestion | `min(1, cap / charge)` — locale à la province |
 | Débit (`debit`) | Goulot de la chaîne : `min(congestion, debit du parent)`, propagé dans l'ordre du Dijkstra |
-| Supply final | `(1 - dist/PORTEE) × debit`, ou `0` si `!relie` |
+| Supply final | `√(1 - dist/PORTEE) × debit`, ou `0` si `!relie` |
 | Coupée (`relie`) | `relie = dist < Infinity` — distinct de « trop loin » (relie mais supply 0) |
 | Poche | `detecterPoches` : composante connexe de provinces `!relie` d'un camp, avec des corps dedans ; journalisée à la bascule (`u.coupe`) |
 | Alerte de saturation | `alerterSaturation` : camp BLEU, `congestion < 0.6` et `charge > 0.5` |

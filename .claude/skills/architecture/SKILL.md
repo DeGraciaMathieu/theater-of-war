@@ -12,7 +12,7 @@ App statique sans build : `index.html` charge `js/main.js` en module ES ; tout l
 
 | Module | Rôle | Dépend de |
 |---|---|---|
-| `config.js` | Constantes d'équilibrage : `RW`/`RH`, `NB_PROV`, `PORTEE`, `ROUGE`/`BLEU`, `TERRAINS` (0-4 procédural, 5-7 Angers) | — |
+| `config.js` | Constantes d'équilibrage : `RW`/`RH`, `NB_PROV`, `PORTEE`, `AVANCE_DEPOT`, `ROUGE`/`BLEU`, `TERRAINS` (0-4 procédural, 5-7 Angers) | — |
 | `etat.js` | Objet `etat` (tout l'état mutable) + `alea()` + requêtes `ennemiSur`, `unitesDe`, `ravitaillement` | — |
 | `carte.js` | Génération procédurale + briques partagées : `creerProvince`, `rasteriserVoronoi(eauMask)`, `installerTheatre`, `poserBase` | logistique, hud |
 | `angers.js` | Carte réelle : Overpass → provinces (eau, ponts, terrains OSM, `ville`), repli sur `genererCarte` | carte, hud |
