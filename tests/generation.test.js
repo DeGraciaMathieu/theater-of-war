@@ -2,7 +2,7 @@ import "./stub-dom.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { etat } from "../js/etat.js";
-import { NB_PROV, ROUGE, BLEU } from "../js/config.js";
+import { NB_PROV, ROUGE, BLEU, RW, RH } from "../js/config.js";
 import { genererCarte } from "../js/carte.js";
 
 test("genererCarte produit un théâtre jouable", () => {
@@ -15,10 +15,15 @@ test("genererCarte produit un théâtre jouable", () => {
     for (const v of p.voisins)
       assert.ok(etat.prov[v].voisins.includes(p.id), `adjacence asymétrique ${p.id}↔${v}`);
 
-  // chaque camp a ses 3 dépôts et son QG
+  // chaque camp a ses 3 dépôts (dont un avancé) et son QG
   for (const camp of [ROUGE, BLEU]){
-    assert.equal(etat.prov.filter(p => p.depot && p.proprio === camp).length, 3);
+    const depots = etat.prov.filter(p => p.depot && p.proprio === camp);
+    assert.equal(depots.length, 3);
     assert.equal(etat.prov.filter(p => p.qg && p.proprio === camp).length, 1);
+    // le dépôt avancé projette le ravitaillement vers le front : au moins un
+    // dépôt est nettement plus proche du centre de la carte que le coin de départ
+    const auCentre = Math.min(...depots.map(d => Math.hypot(d.x - RW/2, d.y - RH/2)));
+    assert.ok(auCentre < 240, `dépôt avancé attendu près du centre, plus proche à ${Math.round(auCentre)}px`);
   }
 
   // 8 corps par camp (7 au front + 1 réserve), chacun sur une province amie

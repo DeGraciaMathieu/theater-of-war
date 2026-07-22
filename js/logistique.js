@@ -54,14 +54,16 @@ export function calculerSupply(){
     }
 
     // 3. le ravitaillement reçu = ce que la distance laisse passer,
-    //    rogné par le maillon le plus saturé de la chaîne
+    //    rogné par le maillon le plus saturé de la chaîne.
+    //    Courbe en √ : relève le milieu de portée (le front vit vers d≈9)
+    //    sans étendre la portée max — au-delà de PORTEE, c'est toujours zéro.
     for (const p of prov){
       if (p.proprio !== camp) continue;
       // relie = il existe un corridor vers un dépôt. À distinguer de
       // « ravitaillé à 0 % » : trop loin n'est pas coupé.
       p.relie = dist[p.id] < Infinity;
       p.supply = !p.relie ? 0
-               : Math.max(0, 1 - dist[p.id] / PORTEE) * p.debit;
+               : Math.sqrt(Math.max(0, 1 - dist[p.id] / PORTEE)) * p.debit;
     }
   }
   alerterSaturation();

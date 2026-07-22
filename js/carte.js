@@ -1,4 +1,4 @@
-import { RW, RH, NB_PROV, ROUGE, BLEU } from "./config.js";
+import { RW, RH, NB_PROV, ROUGE, BLEU, AVANCE_DEPOT } from "./config.js";
 import { etat, alea } from "./etat.js";
 import { calculerSupply } from "./logistique.js";
 import { journal, majCompteurs } from "./hud.js";
@@ -158,12 +158,18 @@ function poserBase(camp, x, y){
   const prov = etat.prov;
   const tries = prov.filter(p => p.proprio === camp)
                     .sort((a,b) => Math.hypot(a.x-x,a.y-y) - Math.hypot(b.x-x,b.y-y));
-  // 3 dépôts espacés + 1 QG
+  // 2 dépôts d'arrière espacés + 1 dépôt avancé + 1 QG
   const depots = [];
   for (const p of tries){
-    if (depots.length >= 3) break;
+    if (depots.length >= 2) break;
     if (depots.every(d => Math.hypot(d.x-p.x, d.y-p.y) > 45*(RW/420))){ p.depot = true; depots.push(p); }
   }
+  // dépôt avancé : projette le ravitaillement vers le front tout en restant
+  // couvert par le territoire de départ — un objectif à défendre
+  const ax = x + AVANCE_DEPOT*(RW/2 - x), ay = y + AVANCE_DEPOT*(RH/2 - y);
+  const avant = prov.filter(p => p.proprio === camp && !p.depot)
+                    .sort((a,b) => Math.hypot(a.x-ax,a.y-ay) - Math.hypot(b.x-ax,b.y-ay))[0];
+  avant.depot = true; depots.push(avant);
   tries[0].qg = true;
 
   // 7 corps d'armée déployés vers le front

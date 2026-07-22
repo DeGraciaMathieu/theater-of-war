@@ -12,6 +12,9 @@ test("le ravitaillement décroît avec la distance au dépôt", () => {
   const [p0, p1, p2] = etat.prov;
   assert.ok(p0.supply > p1.supply && p1.supply > p2.supply);
   for (const p of etat.prov) assert.ok(p.relie, `province ${p.id} devrait être reliée`);
+  // courbe douce : à 2 provinces du dépôt on reste bien ravitaillé
+  // (√(1-2/15) ≈ 0.93 — la courbe linéaire d'origine donnait 0.87)
+  assert.ok(p2.supply > 0.9, `supply attendu > 0.9 à d=2, obtenu ${p2.supply.toFixed(2)}`);
 });
 
 test("une province sans corridor est coupée et forme une poche", () => {
