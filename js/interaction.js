@@ -3,6 +3,7 @@ import { etat, unitesDe } from "./etat.js";
 import { cheminVers, estimerOrdre, donnerOrdre, annulerOrdre } from "./ordres.js";
 import { ficheVide, ficheUnite, ficheProv } from "./hud.js";
 import { genererCarte } from "./carte.js";
+import { genererAngers } from "./angers.js";
 import { tour } from "./tour.js";
 
 const cv = document.getElementById("cv");
@@ -65,5 +66,14 @@ bSupply.onclick = () => {
 document.getElementById("bReset").onclick = () => {
   elJournal.innerHTML = ""; genererCarte();
   etat.auto = false; bAuto.setAttribute("aria-pressed", false); bAuto.textContent = "Lecture auto";
+  ficheVide(); elDate.textContent = "JOUR 001";
+};
+const bAngers = document.getElementById("bAngers");
+bAngers.onclick = async () => {
+  bAngers.disabled = true;                 // pas de double requête Overpass
+  elJournal.innerHTML = "";
+  etat.auto = false; bAuto.setAttribute("aria-pressed", false); bAuto.textContent = "Lecture auto";
+  await genererAngers();
+  bAngers.disabled = false;
   ficheVide(); elDate.textContent = "JOUR 001";
 };
