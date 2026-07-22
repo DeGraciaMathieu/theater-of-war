@@ -116,6 +116,8 @@ export function dessiner(){
   const prov = etat.prov;
   const sx = w/RW, sy = h/RH;
 
+  if (etat.vueSupply) dessinerConvois(sx, sy);
+
   // dépôts et QG
   for (const p of prov){
     if (!p.depot && !p.qg) continue;
@@ -290,6 +292,40 @@ export function dessiner(){
   }
 
   dessinerLegende(w, h);
+}
+
+// Convois : le ravitaillement rendu visible en mouvement, vue Ravitaillement
+// seulement pour ne pas charger la carte. Sur chaque arête de l'arbre de supply
+// (parent → province), des points remontent vers le front — leur nombre suit la
+// charge, leur vitesse le débit : un axe saturé se lit comme un embouteillage.
+function dessinerConvois(sx, sy){
+  const prov = etat.prov;
+  const t = performance.now() / 1000;
+  ctx.save();
+  ctx.fillStyle = "rgba(242,238,226,.85)";
+  for (const camp of [ROUGE, BLEU]){
+    const parent = etat.arbreSupply[camp];
+    if (!parent) continue;
+    for (const p of prov){
+      if (p.proprio !== camp || p.charge <= 0) continue;
+      const par = parent[p.id];
+      if (par === -1) continue;
+      const q = prov[par];
+      const x0 = q.cx*sx, y0 = q.cy*sy, dx = p.cx*sx - x0, dy = p.cy*sy - y0;
+      const L = Math.hypot(dx, dy);
+      if (L < 1) continue;
+      const nb = Math.min(6, Math.ceil(p.charge * 1.5));
+      const vitesse = (14 + 50*p.debit) / L;          // arêtes/s — le débit fait la cadence
+      const decal = (p.id * 0.618) % 1;               // désynchronise les arêtes sans aléa
+      for (let k = 0; k < nb; k++){
+        const a = (t*vitesse + decal + k/nb) % 1;
+        ctx.beginPath();
+        ctx.arc(x0 + dx*a, y0 + dy*a, 2, 0, 7);
+        ctx.fill();
+      }
+    }
+  }
+  ctx.restore();
 }
 
 // Légende des terrains : échantillon de motif + coût de marche, pour que le

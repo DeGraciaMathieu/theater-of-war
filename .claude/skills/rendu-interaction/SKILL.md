@@ -15,6 +15,7 @@ auto_invoke: true
 | Eau | `siteIdx[i] < 0` → bleu sombre + moiré ; bord d'eau sans trait de frontière |
 | Motifs de terrain | `motifTerrain(t, x, y)` — un `case` par terrain, réutilisé par la légende |
 | Vue Ravitaillement | `etat.vueSupply` (bouton `#bSupply`) : surcouche dans `construireFond` — fond normal conservé, contraste de supply exagéré, rouge si supply nul, ambre si axe saturé |
+| Convois | `dessinerConvois` (vue Ravitaillement seulement) : points circulant sur chaque arête de `etat.arbreSupply`, nombre = `charge`, vitesse = `debit` — un axe saturé rampe |
 | Axe de ravitaillement | corps sélectionné → tracé vert pointillé vers son dépôt (`axeRavitaillement`), anneau rouge + % sur le goulot — dans `dessiner` |
 | Portée de dépôt | survol d'un dépôt (`pointermove`, `interaction.js`) → `etat.porteeDepot` via `porteeDepuis` ; provinces à portée éclaircies dans `construireFond` |
 | Pions | Dessinés chaque frame dans `dessiner` : position animée `u.ax`/`u.ay`, force en k, jauge de moral, liseré pulsant si encerclé |

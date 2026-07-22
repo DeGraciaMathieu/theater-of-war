@@ -52,6 +52,18 @@ test("sans saturation pas de goulot, sans corridor pas d'axe", () => {
   assert.equal(axeRavitaillement(leger), null);
 });
 
+test("l'arbre de supply conservé par camp porte la charge des convois", () => {
+  carteRuban();
+  poserCorps(BLEU, 2, 24000);
+  calculerSupply();
+  assert.equal(etat.arbreSupply[BLEU][1], 0);
+  assert.equal(etat.arbreSupply[BLEU][2], 1);
+  assert.equal(etat.arbreSupply[ROUGE][4], 5);
+  // la charge suit exactement la chaîne des parents : c'est elle que les convois dessinent
+  for (const id of [2, 1, 0]) assert.ok(etat.prov[id].charge > 0);
+  assert.equal(etat.prov[4].charge, 0);  // pas de corps rouge : aucun convoi côté Fédération
+});
+
 test("la portée d'un dépôt s'arrête au corridor ami", () => {
   carteRuban();
   assert.deepEqual([...porteeDepuis(0)].sort(), [0, 1, 2]);
