@@ -147,22 +147,22 @@ export function dessiner(){
     const restTotal = Math.max(0, o.arrive - etat.jour)
       + o.chemin.slice(o.idx + 1).reduce((s,p) => s + marche(p), 0);
     const etiq = o.transmis ? `J-${restProchain}` : `⧖ ${restProchain}`;
-    ctx.font = "700 11px 'Share Tech Mono', monospace";
-    const bw = ctx.measureText(etiq).width + 14;
-    let bx = prochaine.cx*sx + 9, by = prochaine.cy*sy - 24;
+    ctx.font = "700 13px 'Share Tech Mono', monospace";
+    const bw = ctx.measureText(etiq).width + 16;
+    let bx = prochaine.cx*sx + 9, by = prochaine.cy*sy - 27;
     if (bx + bw > w) bx = prochaine.cx*sx - 9 - bw;
     if (by < 0) by = prochaine.cy*sy + 9;
     ctx.fillStyle = o.transmis ? "rgba(224,165,60,.92)" : "rgba(14,16,14,.9)";
-    ctx.fillRect(bx, by, bw, 17);
+    ctx.fillRect(bx, by, bw, 20);
     ctx.strokeStyle = "#e0a53c"; ctx.lineWidth = 1;
-    ctx.strokeRect(bx, by, bw, 17);
+    ctx.strokeRect(bx, by, bw, 20);
     ctx.fillStyle = o.transmis ? "#14100a" : "#e0a53c";
     ctx.textAlign = "left";
-    ctx.fillText(etiq, bx + 7, by + 12);
+    ctx.fillText(etiq, bx + 8, by + 14);
     if (o.chemin.length - o.idx > 1){        // objectif encore à plusieurs sauts
       ctx.fillStyle = "rgba(232,228,214,.8)";
-      ctx.font = "10px 'Share Tech Mono', monospace";
-      ctx.fillText(`obj. ${restTotal}j`, bx, by - 4);
+      ctx.font = "12px 'Share Tech Mono', monospace";
+      ctx.fillText(`obj. ${restTotal}j`, bx, by - 5);
     }
     ctx.restore();
   }
@@ -190,21 +190,21 @@ export function dessiner(){
       // encart : transmission puis marche = arrivée
       const l1 = `reçu dans ${e.latence} j`;
       const l2 = `arrivée J${etat.jour + e.total} (+${e.total} j)`;
-      ctx.font = "700 11px 'Saira Condensed', sans-serif";
-      const w2 = Math.max(ctx.measureText(l1).width, ctx.measureText(l2).width) + 16;
-      let bx = X + 12, by = Y - 34;
+      ctx.font = "700 13px 'Saira Condensed', sans-serif";
+      const w2 = Math.max(ctx.measureText(l1).width, ctx.measureText(l2).width) + 18;
+      let bx = X + 12, by = Y - 42;
       if (bx + w2 > w) bx = X - 12 - w2;
       if (by < 0) by = Y + 12;
       ctx.fillStyle = "rgba(14,16,14,.9)";
-      ctx.fillRect(bx, by, w2, 34);
+      ctx.fillRect(bx, by, w2, 40);
       ctx.strokeStyle = "#e0a53c"; ctx.lineWidth = 1;
-      ctx.strokeRect(bx, by, w2, 34);
+      ctx.strokeRect(bx, by, w2, 40);
       ctx.textAlign = "left";
       ctx.fillStyle = "#e0a53c";
-      ctx.fillText(l1, bx + 8, by + 13);
+      ctx.fillText(l1, bx + 9, by + 16);
       ctx.fillStyle = "#e8e4d6";
-      ctx.font = "11px 'Share Tech Mono', monospace";
-      ctx.fillText(l2, bx + 8, by + 27);
+      ctx.font = "13px 'Share Tech Mono', monospace";
+      ctx.fillText(l2, bx + 9, by + 32);
       ctx.restore();
     }
   }
@@ -213,25 +213,25 @@ export function dessiner(){
   for (const po of etat.poches){
     const X = po.cx*sx, Y = po.cy*sy;
     const txt = po.hommes.toLocaleString("fr-FR") + " isolés";
-    ctx.font = "700 11px 'Saira Condensed', sans-serif";
-    const w = Math.max(96, ctx.measureText(txt).width + 18);
+    ctx.font = "700 13px 'Saira Condensed', sans-serif";
+    const w = Math.max(112, ctx.measureText(txt).width + 20);
     ctx.fillStyle = "rgba(14,16,14,.82)";
-    ctx.fillRect(X - w/2, Y - 24, w, 30);
+    ctx.fillRect(X - w/2, Y - 28, w, 36);
     ctx.strokeStyle = "#e0a53c"; ctx.lineWidth = 1.5;
-    ctx.strokeRect(X - w/2, Y - 24, w, 30);
+    ctx.strokeRect(X - w/2, Y - 28, w, 36);
     ctx.textAlign = "center";
     ctx.fillStyle = "#e0a53c";
-    ctx.fillText("POCHE · " + po.corps + " CORPS", X, Y - 12);
+    ctx.fillText("POCHE · " + po.corps + " CORPS", X, Y - 14);
     ctx.fillStyle = "#e8e4d6";
-    ctx.font = "11px 'Share Tech Mono', monospace";
-    ctx.fillText(txt, X, Y + 1);
+    ctx.font = "13px 'Share Tech Mono', monospace";
+    ctx.fillText(txt, X, Y + 3);
   }
 
   dessinerBatailles(sx, sy);
 
   // pions
   for (const u of etat.unites){
-    const X = u.ax*sx, Y = u.ay*sy, W = 34, H = 21;
+    const X = u.ax*sx, Y = u.ay*sy, W = 42, H = 26;
     const rav = ravitaillement(u);
     ctx.fillStyle = u.camp === ROUGE ? "#b02a20" : "#2f5d8a";
     ctx.strokeStyle = etat.selection === u.id ? "#e0a53c" : "rgba(0,0,0,.7)";
@@ -245,13 +245,13 @@ export function dessiner(){
       ctx.strokeRect(X-W/2-3, Y-H/2-3, W+6, H+6);
     }
     ctx.fillStyle = "#f2eee2";
-    ctx.font = "700 10px 'Share Tech Mono', monospace";
+    ctx.font = "700 13px 'Share Tech Mono', monospace";
     ctx.textAlign = "center";
-    ctx.fillText(Math.round(u.force/1000) + "k", X, Y+1);
+    ctx.fillText(Math.round(u.force/1000) + "k", X, Y+2);
     ctx.fillStyle = "rgba(0,0,0,.45)";
-    ctx.fillRect(X-W/2+2, Y+H/2-5, W-4, 3);
+    ctx.fillRect(X-W/2+2, Y+H/2-6, W-4, 4);
     ctx.fillStyle = u.moral > 55 ? "#8fc47a" : u.moral > 28 ? "#e0a53c" : "#d0503f";
-    ctx.fillRect(X-W/2+2, Y+H/2-5, (W-4)*(u.moral/100), 3);
+    ctx.fillRect(X-W/2+2, Y+H/2-6, (W-4)*(u.moral/100), 4);
   }
 
   dessinerLegende(w, h);
@@ -262,9 +262,9 @@ export function dessiner(){
 function dessinerLegende(w, h){
   // seulement les terrains de la carte affichée (procédurale ou Angers)
   const items = [...new Set(etat.prov.map(p => p.terrain))].sort((a,b) => a-b);
-  const lh = 17, pad = 8, cw = 26, sh = 13;
-  const bh = 15 + items.length*lh + pad;
-  const bw = 140;
+  const lh = 21, pad = 9, cw = 30, sh = 16;
+  const bh = 19 + items.length*lh + pad;
+  const bw = 172;
   const x0 = 8, y0 = Math.max(8, h - bh - 8);
   ctx.save();
   ctx.fillStyle = "rgba(14,16,14,.88)";
@@ -272,12 +272,12 @@ function dessinerLegende(w, h){
   ctx.strokeStyle = "#3a423a"; ctx.lineWidth = 1;
   ctx.strokeRect(x0, y0, bw, bh);
   ctx.textAlign = "left";
-  ctx.fillStyle = "#8d9088";
-  ctx.font = "700 9px 'Saira Condensed', sans-serif";
-  ctx.fillText("TERRAIN · COÛT DE MARCHE", x0+pad, y0+11);
+  ctx.fillStyle = "#9ba09a";
+  ctx.font = "700 11px 'Saira Condensed', sans-serif";
+  ctx.fillText("TERRAIN · COÛT DE MARCHE", x0+pad, y0+13);
 
   items.forEach((t, k) => {
-    const yy = y0 + 15 + k*lh;
+    const yy = y0 + 19 + k*lh;
     const col = TERRAINS[t].col;
     for (let py = 0; py < sh; py++)
       for (let px = 0; px < cw; px++){
@@ -288,8 +288,8 @@ function dessinerLegende(w, h){
     ctx.strokeStyle = "#0e100e"; ctx.lineWidth = 1;
     ctx.strokeRect(x0+pad, yy, cw, sh);
     ctx.fillStyle = "#e8e4d6";
-    ctx.font = "11px 'Saira Condensed', sans-serif";
-    ctx.fillText(`${TERRAINS[t].nom} ×${coutMarche(t)}`, x0+pad+cw+7, yy+10);
+    ctx.font = "13px 'Saira Condensed', sans-serif";
+    ctx.fillText(`${TERRAINS[t].nom} ×${coutMarche(t)}`, x0+pad+cw+8, yy+12);
   });
   ctx.restore();
 }
@@ -327,12 +327,12 @@ function dessinerBatailles(sx, sy){
     // cartouche opaque au-dessus — c'est lui qui rend les chiffres lisibles
     const bleuPerd  = (b.campAtt === BLEU ? b.perteAtt : b.perteDef).toLocaleString("fr-FR");
     const rougePerd = (b.campAtt === BLEU ? b.perteDef : b.perteAtt).toLocaleString("fr-FR");
-    ctx.font = "700 12px 'Share Tech Mono', monospace";
+    ctx.font = "700 14px 'Share Tech Mono', monospace";
     const wB = ctx.measureText("-"+bleuPerd).width;
     const wR = ctx.measureText("-"+rougePerd).width;
-    const gap = 20;                          // place pour les épées au centre
-    const cw = wB + wR + gap + 20;
-    const ch = 22;
+    const gap = 22;                          // place pour les épées au centre
+    const cw = wB + wR + gap + 22;
+    const ch = 26;
     let cx = X - cw/2;
     const cy = Y - 20 - ch - b.t*10;         // s'élève doucement
     // clamp horizontal dans le canvas
@@ -348,7 +348,7 @@ function dessinerBatailles(sx, sy){
     ctx.strokeStyle = `rgba(${teinte},.95)`; ctx.lineWidth = 1.5;
     roundRect(cx, cy, cw, ch, 3); ctx.stroke();
 
-    const midY = cy + ch/2 + 4;
+    const midY = cy + ch/2 + 5;
     ctx.textAlign = "left";
     ctx.fillStyle = "#9dc6ee";
     ctx.fillText("-"+bleuPerd, cx + 8, midY);
