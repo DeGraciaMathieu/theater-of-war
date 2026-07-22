@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>THÉÂTRE — prototype opérationnel</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="barre">
+  <span class="titre">Théâtre</span>
+  <span style="font-size:12px;letter-spacing:.14em;color:var(--os-faible)">PROTOTYPE OPÉRATIONNEL</span>
+  <span class="date" id="date">JOUR 001</span>
+</div>
+
+<div class="scene">
+  <canvas id="cv"></canvas>
+  <div class="compteurs">
+    <div class="compteur" id="cptRouge">0<small>Fédération</small></div>
+    <div class="compteur" id="cptBleu">0<small>Alliance — vous</small></div>
+  </div>
+</div>
+
+<div class="hud">
+  <div class="bloc">
+    <h3>Conduite</h3>
+    <div class="cmd">
+      <button id="bStep">Jour suivant ▸</button>
+      <button id="bAuto" aria-pressed="false">Lecture auto</button>
+      <button id="bSupply" aria-pressed="false">Ravitaillement</button>
+      <button id="bReset">Nouvelle carte</button>
+    </div>
+  </div>
+  <div class="bloc fiche" id="fiche"><span class="vide">Donnez vos ordres à l'arrêt, puis « Jour suivant » pour les faire jouer un jour à la fois. Touchez un corps bleu, puis une province : l'itinéraire est calculé (re-toucher sa case annule).</span></div>
+  <div class="bloc journal" id="journal"></div>
+</div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

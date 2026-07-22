@@ -1,0 +1,71 @@
+:root{
+  --encre:#0e100e;
+  --os:#e8e4d6;
+  --os-faible:#8d9088;
+  --rouge:#c8352a;
+  --bleu:#3d6f9e;
+  --ambre:#e0a53c;
+  --trait:#3a423a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--encre);
+  color:var(--os);
+  font-family:"Saira Condensed",-apple-system,"Segoe UI Semibold",sans-serif;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.barre{
+  display:flex;align-items:baseline;gap:14px;
+  padding:8px 14px;border-bottom:1px solid var(--trait);
+  background:#12150f;flex:none;
+}
+.titre{font-weight:700;letter-spacing:.22em;text-transform:uppercase;font-size:14px}
+.date{font-family:"Share Tech Mono",monospace;font-size:15px;color:var(--ambre);margin-left:auto}
+
+.scene{position:relative;flex:1;min-height:0}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+
+/* chiffres d'effectifs, façon time-lapse */
+.compteurs{position:absolute;inset:0;pointer-events:none}
+.compteur{
+  position:absolute;font-family:"Share Tech Mono",monospace;
+  font-size:clamp(28px,7vw,64px);line-height:1;
+  text-shadow:0 3px 0 rgba(0,0,0,.55);letter-spacing:-.02em;
+}
+.compteur small{display:block;font-family:"Saira Condensed",sans-serif;
+  font-size:11px;letter-spacing:.28em;opacity:.75;margin-top:4px;text-transform:uppercase}
+#cptRouge{top:6%;right:5%;text-align:right;color:#ff8a7e}
+#cptBleu{bottom:12%;left:5%;color:#9dc6ee}
+
+.hud{
+  flex:none;border-top:1px solid var(--trait);background:#12150f;
+  display:flex;gap:0;align-items:stretch;
+  height:124px;                 /* hauteur figée : le journal ne pousse plus la carte */
+}
+.bloc{padding:8px 12px;border-right:1px solid var(--trait);min-width:0;
+      min-height:0;overflow:hidden}
+.bloc h3{font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--os-faible);margin-bottom:6px;font-weight:500}
+.cmd{display:flex;gap:6px;flex-wrap:wrap}
+button{
+  font-family:inherit;font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase;
+  background:#1d221b;color:var(--os);border:1px solid var(--trait);
+  padding:7px 11px;cursor:pointer;
+}
+button:hover{border-color:var(--ambre);color:var(--ambre)}
+button:focus-visible{outline:2px solid var(--ambre);outline-offset:2px}
+button[aria-pressed="true"]{background:var(--ambre);color:var(--encre);border-color:var(--ambre)}
+.fiche{flex:1;font-size:13px;line-height:1.45;overflow:hidden}
+.fiche .vide{color:var(--os-faible)}
+.jauge{height:5px;background:#232823;margin:3px 0 7px;position:relative}
+.jauge i{position:absolute;inset:0 auto 0 0;display:block}
+.journal{width:min(34vw,320px);flex:none;font-family:"Share Tech Mono",monospace;
+  font-size:11px;line-height:1.5;color:var(--os-faible);border-right:none;
+  min-height:0;overflow-y:auto;overscroll-behavior:contain}
+.journal b{color:var(--os);font-weight:400}
+@media (max-width:720px){
+  .hud{flex-wrap:wrap;height:auto;max-height:42vh}
+  .journal{width:100%;height:76px;border-top:1px solid var(--trait)}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
