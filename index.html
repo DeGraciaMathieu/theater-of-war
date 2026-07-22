@@ -30,12 +30,18 @@
   <div class="bloc">
     <h3>Conduite</h3>
     <div class="cmd">
-      <button id="bStep">Jour suivant ▸</button>
-      <button id="bAuto" aria-pressed="false">Lecture auto</button>
-      <button id="bSupply" aria-pressed="false">Ravitaillement</button>
-      <button id="bCamps" aria-pressed="true">Camps</button>
-      <button id="bReset">Nouvelle carte</button>
-      <button id="bAngers">Carte d'Angers</button>
+      <div class="grp">
+        <button id="bStep" class="primaire">Jour suivant ▸</button>
+        <button id="bAuto" aria-pressed="false">Lecture auto</button>
+      </div>
+      <div class="grp">
+        <button id="bSupply" aria-pressed="false">Ravitaillement</button>
+        <button id="bCamps" aria-pressed="true">Camps</button>
+      </div>
+      <div class="grp">
+        <button id="bReset">Nouvelle carte</button>
+        <button id="bAngers">Carte d'Angers</button>
+      </div>
     </div>
   </div>
   <div class="bloc fiche" id="fiche"><span class="vide">Donnez vos ordres à l'arrêt, puis « Jour suivant » pour les faire jouer un jour à la fois. Touchez un corps bleu, puis une province : l'itinéraire est calculé (re-toucher sa case annule).</span></div>

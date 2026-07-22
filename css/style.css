@@ -33,6 +33,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
   position:absolute;font-family:"Share Tech Mono",monospace;
   font-size:clamp(32px,7vw,68px);line-height:1;
   text-shadow:0 3px 0 rgba(0,0,0,.55);letter-spacing:-.02em;
+  background:rgba(10,11,10,.32);padding:8px 14px 10px;
 }
 .compteur small{display:block;font-family:"Saira Condensed",sans-serif;
   font-size:14px;letter-spacing:.28em;opacity:.8;margin-top:4px;text-transform:uppercase}
@@ -47,7 +48,10 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 .bloc{padding:10px 14px;border-right:1px solid var(--trait);min-width:0;
       min-height:0;overflow:hidden}
 .bloc h3{font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--os-faible);margin-bottom:8px;font-weight:500}
-.cmd{display:flex;gap:8px;flex-wrap:wrap}
+/* trois groupes en colonnes : conduite / vues / cartes — l'action primaire ressort */
+.cmd{display:flex;gap:12px}
+.grp{display:flex;flex-direction:column;gap:7px;padding-right:12px;border-right:1px solid #232823}
+.grp:last-child{border-right:none;padding-right:0}
 button{
   font-family:inherit;font-weight:700;font-size:14px;letter-spacing:.08em;text-transform:uppercase;
   background:#1d221b;color:var(--os);border:1px solid var(--trait);
@@ -55,14 +59,18 @@ button{
 }
 button:hover{border-color:var(--ambre);color:var(--ambre)}
 button:focus-visible{outline:2px solid var(--ambre);outline-offset:2px}
-button[aria-pressed="true"]{background:var(--ambre);color:var(--encre);border-color:var(--ambre)}
+/* toggle actif : contour + texte ambre — l'aplat ambre reste réservé à l'action primaire */
+button[aria-pressed="true"]{background:#2a2415;color:var(--ambre);border-color:var(--ambre)}
+button.primaire{background:var(--ambre);color:var(--encre);border-color:var(--ambre)}
+button.primaire:hover{background:#f0b654;color:var(--encre)}
 .fiche{flex:1;font-size:16px;line-height:1.45;overflow:hidden}
 .fiche .vide{color:var(--os-faible)}
 .jauge{height:6px;background:#232823;margin:3px 0 8px;position:relative}
 .jauge i{position:absolute;inset:0 auto 0 0;display:block}
 .journal{width:min(38vw,400px);flex:none;font-family:"Share Tech Mono",monospace;
-  font-size:13px;line-height:1.55;color:var(--os-faible);border-right:none;
+  font-size:13px;line-height:1.5;color:var(--os-faible);border-right:none;
   min-height:0;overflow-y:auto;overscroll-behavior:contain}
+.journal div{margin-bottom:5px}
 .journal b{color:var(--os);font-weight:400}
 @media (max-width:720px){
   .hud{flex-wrap:wrap;height:auto;max-height:42vh}
