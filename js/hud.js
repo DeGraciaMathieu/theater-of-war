@@ -28,9 +28,9 @@ export function ficheUnite(u){
   elFiche.innerHTML = `
     <div style="font-weight:700;letter-spacing:.1em">${u.nom} · corps d'armée</div>
     <div style="font-family:'Share Tech Mono',monospace">${u.force.toLocaleString("fr-FR")} hommes</div>
-    <div style="font-size:10px;letter-spacing:.2em;color:var(--os-faible);margin-top:4px">MORAL</div>
+    <div style="font-size:12px;letter-spacing:.2em;color:var(--os-faible);margin-top:4px">MORAL</div>
     <div class="jauge"><i style="width:${u.moral}%;background:${u.moral>55?"#8fc47a":u.moral>28?"#e0a53c":"#d0503f"}"></i></div>
-    <div style="font-size:10px;letter-spacing:.2em;color:var(--os-faible)">RAVITAILLEMENT</div>
+    <div style="font-size:12px;letter-spacing:.2em;color:var(--os-faible)">RAVITAILLEMENT</div>
     <div class="jauge"><i style="width:${Math.round(r*100)}%;background:${r>0?"#e0a53c":"#d0503f"}"></i></div>
     <div>${r === 0 ? "<b style='color:#d0503f'>Coupé de l'arrière</b>"
       : Math.round(r*100)+" % · terrain "+TERRAINS[prov[u.prov].terrain].nom
@@ -47,9 +47,9 @@ export function ficheProv(p){
   elFiche.innerHTML = `
     <div style="font-weight:700;letter-spacing:.1em">Province ${p.id} · ${camp}</div>
     <div>${TERRAINS[p.terrain].nom}${p.ville ? " · nœud routier" : ""}${p.depot ? " · <b>dépôt</b>" : ""}${p.qg ? " · <b>QG</b>" : ""}</div>
-    <div style="font-size:10px;letter-spacing:.2em;color:var(--os-faible);margin-top:4px">RAVITAILLEMENT REÇU</div>
+    <div style="font-size:12px;letter-spacing:.2em;color:var(--os-faible);margin-top:4px">RAVITAILLEMENT REÇU</div>
     <div class="jauge"><i style="width:${Math.round(p.supply*100)}%;background:#e0a53c"></i></div>
-    <div style="font-size:10px;letter-spacing:.2em;color:var(--os-faible)">TRANSIT ${Math.round(p.charge*12)}k / ${Math.round(p.cap*12)}k</div>
+    <div style="font-size:12px;letter-spacing:.2em;color:var(--os-faible)">TRANSIT ${Math.round(p.charge*12)}k / ${Math.round(p.cap*12)}k</div>
     <div class="jauge"><i style="width:${Math.min(100,Math.round(p.charge/Math.max(p.cap,.01)*100))}%;background:${p.congestion<0.7?"#d0503f":p.congestion<0.95?"#e0a53c":"#8fc47a"}"></i></div>
     <div>Défense ×${TERRAINS[p.terrain].def.toFixed(2)}</div>`;
 }
