@@ -1,6 +1,7 @@
 import { RW, RH, TERRAINS, ROUGE, BLEU } from "./config.js";
 import { etat, ravitaillement } from "./etat.js";
 import { marche } from "./ordres.js";
+import { axeRavitaillement } from "./logistique.js";
 
 const cv = document.getElementById("cv");
 const ctx = cv.getContext("2d");
@@ -51,24 +52,29 @@ function construireFond(){
       const mo = motifTerrain(p.terrain, x, y);
       r += mo; g += mo; b += mo;
 
-      if (vueSupply){
-        const v = p.supply;
-        r = 26 + v*(p.proprio===ROUGE?210:60);
-        g = 26 + v*150;
-        b = 26 + v*(p.proprio===BLEU?210:60);
-        if (v === 0){ r = 46; g = 20; b = 22; }
-        if (p.proprio && p.congestion < 0.9){       // axe qui sature
-          const m = Math.min(1, (0.9 - p.congestion) * 1.6);
-          r = r*(1-m) + 224*m; g = g*(1-m) + 165*m; b = b*(1-m) + 60*m;
-        }
-      } else if (p.proprio === ROUGE){              // teinte de camp, pas écrasement
+      if (p.proprio === ROUGE){                     // teinte de camp, pas écrasement
         r = r*0.58 + 190*0.42; g = g*0.58 + 58*0.42; b = b*0.58 + 52*0.42;
       } else if (p.proprio === BLEU){
         r = r*0.58 + 66*0.42;  g = g*0.58 + 112*0.42; b = b*0.58 + 158*0.42;
       }
-      // relief : les provinces mal ravitaillées s'assombrissent
-      const k = 0.66 + 0.34*(p.proprio ? p.supply : 0.5);
+      // relief : les provinces mal ravitaillées s'assombrissent. La vue
+      // Ravitaillement garde ce même fond (terrain, camps, front) et se
+      // contente d'exagérer le contraste au lieu de tout repeindre.
+      const k = vueSupply ? (p.proprio ? 0.30 + 0.70*p.supply : 0.5)
+                          : 0.66 + 0.34*(p.proprio ? p.supply : 0.5);
       r *= k; g *= k; b *= k;
+
+      if (vueSupply && p.proprio){
+        if (p.supply === 0){                        // relié ou non : rien n'arrive
+          r = r*0.45 + 110*0.55; g = g*0.45 + 28*0.55; b = b*0.45 + 26*0.55;
+        } else if (p.congestion < 0.9){             // axe qui sature
+          const m = Math.min(1, (0.9 - p.congestion) * 1.6);
+          r = r*(1-m) + 224*m; g = g*(1-m) + 165*m; b = b*(1-m) + 60*m;
+        }
+      }
+
+      // zone d'action du dépôt survolé : provinces réellement à sa portée
+      if (etat.porteeDepot && etat.porteeDepot.provs.has(s)){ r += 30; g += 32; b += 26; }
 
       if (s === survol){ r += 42; g += 42; b += 42; }
 
@@ -119,6 +125,35 @@ export function dessiner(){
     if (p.qg){ ctx.beginPath(); ctx.arc(X,Y,9,0,7); ctx.stroke(); }
     ctx.strokeRect(X-5, Y-5, 10, 10);
     ctx.beginPath(); ctx.moveTo(X-5,Y-5); ctx.lineTo(X+5,Y+5); ctx.stroke();
+  }
+
+  // axe de ravitaillement du corps sélectionné : d'où vient son supply, et le
+  // maillon qui le limite — vert pour ne pas se confondre avec les ordres ambre
+  if (etat.selection !== null){
+    const u = etat.unites.find(x => x.id === etat.selection);
+    const axe = u ? axeRavitaillement(u) : null;
+    if (axe){
+      ctx.save();
+      ctx.setLineDash([6,5]);
+      ctx.strokeStyle = "rgba(143,196,122,.9)";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(u.ax*sx, u.ay*sy);
+      for (const id of axe.chemin) ctx.lineTo(prov[id].cx*sx, prov[id].cy*sy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      if (axe.goulot !== null){
+        const g = prov[axe.goulot];
+        const X = g.cx*sx, Y = g.cy*sy;
+        ctx.strokeStyle = "#d0503f"; ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.arc(X, Y, 11, 0, 7); ctx.stroke();
+        ctx.font = "700 13px 'Share Tech Mono', monospace";
+        ctx.textAlign = "center";
+        ctx.fillStyle = "#d0503f";
+        ctx.fillText(Math.round(g.congestion*100) + " %", X, Y - 17);
+      }
+      ctx.restore();
+    }
   }
 
   // itinéraires

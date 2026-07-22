@@ -1,6 +1,7 @@
 import { RW, RH, BLEU } from "./config.js";
 import { etat, unitesDe } from "./etat.js";
 import { cheminVers, estimerOrdre, donnerOrdre, annulerOrdre } from "./ordres.js";
+import { porteeDepuis } from "./logistique.js";
 import { ficheVide, ficheUnite, ficheProv } from "./hud.js";
 import { genererCarte } from "./carte.js";
 import { genererAngers } from "./angers.js";
@@ -20,7 +21,12 @@ function provSous(ev){
 
 cv.addEventListener("pointermove", e => {
   const s2 = provSous(e);
-  if (s2 !== etat.survol){ etat.survol = s2; etat.sale = true; }
+  if (s2 !== etat.survol){
+    etat.survol = s2; etat.sale = true;
+    // survol d'un dépôt : montrer sa zone d'action réelle
+    const p = s2 >= 0 ? etat.prov[s2] : null;
+    etat.porteeDepot = p && p.depot && p.proprio ? { prov: s2, provs: porteeDepuis(s2) } : null;
+  }
   // aperçu de l'ordre projeté vers la province survolée
   etat.apercu = null;
   if (etat.selection !== null && etat.survol >= 0){
@@ -31,7 +37,10 @@ cv.addEventListener("pointermove", e => {
     }
   }
 });
-cv.addEventListener("pointerleave", () => { if (etat.survol !== -1){ etat.survol = -1; etat.sale = true; } etat.apercu = null; });
+cv.addEventListener("pointerleave", () => {
+  if (etat.survol !== -1){ etat.survol = -1; etat.sale = true; }
+  etat.apercu = null; etat.porteeDepot = null;
+});
 
 cv.addEventListener("pointerdown", e => {
   const id = provSous(e);
