@@ -19,9 +19,10 @@ auto_invoke: true
 
 | Fichier | Couvre |
 |---|---|
-| `tests/generation.test.js` | `genererCarte` : nombre de provinces, symétrie d'adjacence, 3 dépôts + 1 QG + 8 corps par camp, supply initial |
-| `tests/logistique.test.js` | `calculerSupply` : décroissance avec la distance, coupure (`relie`), poches, dépôt occupé par l'ennemi |
-| `tests/ordres-combat.test.js` | Latence puis marche étape par étape, conquête d'une province vide, percée avec décrochage, capitulation par attrition |
+| `tests/generation.test.js` | `genererCarte` : nombre de provinces, symétrie d'adjacence, 3 dépôts + 1 QG + 8 corps par camp, supply initial, bois et urbain procéduraux |
+| `tests/logistique.test.js` | `calculerSupply` : décroissance avec la distance, coupure (`relie`), poches, goulot/axe, arbre de charge, portée de dépôt, dépôt occupé par l'ennemi |
+| `tests/ordres-combat.test.js` | Latence puis marche étape par étape, conquête d'une province vide, percée avec décrochage, repoussé par la défense du terrain, attrition (palier de moral, renfort/érosion, capitulation), IA rouge (cible la plus faible, un ordre par corps) |
+| `tests/tour.test.js` | Avance rapide (arrêt sur événement, plafond `AVANCE_MAX`), fin de partie (victoire/défaite par les dépôts, tour inerte après) |
 
 Non couvert (assumé) : `rendu.js`, `hud.js`, `interaction.js`, `main.js` (affichage/DOM), `angers.js` (dépend du réseau — sa logique partagée est couverte via `carte.js`), `osm/`.
 

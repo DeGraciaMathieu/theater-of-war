@@ -6,7 +6,7 @@ import { etat } from "../js/etat.js";
 import { ROUGE, BLEU, AVANCE_MAX } from "../js/config.js";
 import { calculerSupply } from "../js/logistique.js";
 import { donnerOrdre } from "../js/ordres.js";
-import { avancerJusquEvenement } from "../js/tour.js";
+import { tour, avancerJusquEvenement } from "../js/tour.js";
 
 // le corps rouge posé sur son dépôt (province 5) est inerte : aucune cible
 // bleue voisine, aucun axe d'avance — et sans lui verifierFin déclarerait
@@ -25,6 +25,32 @@ test("l'avance rapide s'arrête quand un corps bleu arrive à destination", () =
   assert.equal(u.prov, 2);
   assert.equal(etat.ordres.length, 0);
   assert.ok(etat.jour > 1, "des jours ont été enchaînés");
+});
+
+test("prendre le dernier dépôt rouge gagne la partie, et le tour s'arrête là", () => {
+  carteRuban();
+  poserCorps(ROUGE, 5, 10000);
+  poserCorps(BLEU, 0, 12000);
+  calculerSupply();
+  etat.prov[5].proprio = BLEU;           // l'unique dépôt rouge tombe
+
+  tour();
+  assert.equal(etat.fini, true, "plus aucun dépôt rouge : victoire");
+
+  const jour = etat.jour;
+  tour();
+  assert.equal(etat.jour, jour, "une partie finie ne joue plus de jour");
+});
+
+test("perdre le dernier dépôt bleu perd la partie", () => {
+  carteRuban();
+  poserCorps(ROUGE, 5, 10000);
+  poserCorps(BLEU, 0, 12000);
+  calculerSupply();
+  etat.prov[0].proprio = ROUGE;          // l'unique dépôt bleu tombe
+
+  tour();
+  assert.equal(etat.fini, true);
 });
 
 test("sans événement, l'avance rapide plafonne à AVANCE_MAX jours", () => {
