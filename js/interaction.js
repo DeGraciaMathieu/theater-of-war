@@ -5,7 +5,7 @@ import { porteeDepuis } from "./logistique.js";
 import { ficheVide, ficheUnite, ficheProv } from "./hud.js";
 import { genererCarte } from "./carte.js";
 import { genererAngers } from "./angers.js";
-import { tour } from "./tour.js";
+import { tour, avancerJusquEvenement } from "./tour.js";
 
 const cv = document.getElementById("cv");
 const elDate = document.getElementById("date");
@@ -62,6 +62,7 @@ cv.addEventListener("pointerdown", e => {
 const bStep = document.getElementById("bStep");
 const bAuto = document.getElementById("bAuto");
 bStep.onclick = () => { if (!etat.fini && !etat.anim) tour(); };
+document.getElementById("bEvent").onclick = () => { if (!etat.fini && !etat.anim) avancerJusquEvenement(); };
 // Espace = « Jour suivant » — sauf sur un bouton focalisé, où la touche l'activerait déjà
 document.addEventListener("keydown", e => {
   if (e.code !== "Space" || e.repeat || e.target.tagName === "BUTTON") return;

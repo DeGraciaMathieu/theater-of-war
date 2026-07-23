@@ -43,7 +43,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 .hud{
   flex:none;border-top:1px solid var(--trait);background:#12150f;
   display:flex;gap:0;align-items:stretch;
-  height:152px;                 /* hauteur figée : le journal ne pousse plus la carte */
+  height:172px;                 /* hauteur figée : le journal ne pousse plus la carte */
 }
 .bloc{padding:10px 14px;border-right:1px solid var(--trait);min-width:0;
       min-height:0;overflow:hidden}
