@@ -98,3 +98,14 @@ bAngers.onclick = async () => {
   bAngers.disabled = false;
   ficheVide(); elDate.textContent = "JOUR 001";
 };
+
+// Accueil : la carte procédurale du démarrage est déjà prête derrière
+// l'overlay ; pour Angers, on charge avant de révéler le théâtre.
+const elAccueil = document.getElementById("accueil");
+document.getElementById("bAccueilProcedural").onclick = () => { elAccueil.hidden = true; };
+const bAccueilAngers = document.getElementById("bAccueilAngers");
+bAccueilAngers.onclick = async () => {
+  bAccueilAngers.disabled = true;          // pas de double requête Overpass
+  await genererAngers();
+  elAccueil.hidden = true;
+};

@@ -29,6 +29,7 @@ auto_invoke: true
 | Compteurs d'effectifs | `majCompteurs` → `#cptRouge` / `#cptBleu` |
 | Sélection / ordre à la souris | `pointerdown` (`interaction.js`) : corps bleu → sélection ; province → ordre ; sa propre case → annulation |
 | Boutons | `#bStep`, `#bEvent` (avance rapide `avancerJusquEvenement`), `#bAuto`, `#bSupply`, `#bCamps`, `#bReset`, `#bAngers` — câblés dans `interaction.js` |
+| Accueil | Overlay `#accueil` (`index.html`), visible au chargement par-dessus la carte procédurale déjà générée : `#bAccueilProcedural` la révèle telle quelle, `#bAccueilAngers` charge Angers avant de fermer — câblé dans `interaction.js` |
 | Teinte de camps | `etat.teinteCamps` (bouton `#bCamps`, actif par défaut) : coupe la surimpression rouge/bleu dans `construireFond` — le terrain apparaît nu, les frontières et le relief de supply restent |
 | Ombre de front | `distanceAuFront()` (chamfer L1 sur le raster, recalculé à chaque `construireFond`) : dégradé de couleur de camp sur `OMBRE_FRONT` px de chaque côté du front — toujours visible, y compris teinte de camps coupée |
 
