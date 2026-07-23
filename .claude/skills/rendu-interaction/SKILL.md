@@ -28,8 +28,8 @@ auto_invoke: true
 | Journal | `journal(txt)` (`js/hud.js`) : préfixe J-jour, 60 lignes max — seule sortie autorisée de la logique |
 | Compteurs d'effectifs | `majCompteurs` → `#cptRouge` / `#cptBleu` |
 | Sélection / ordre à la souris | `pointerdown` (`interaction.js`) : corps bleu → sélection ; province → ordre ; sa propre case → annulation |
-| Boutons | `#bStep`, `#bEvent` (avance rapide `avancerJusquEvenement`), `#bAuto`, `#bSupply`, `#bCamps`, `#bReset`, `#bOsm` (+ saisie `#villeHud`, Entrée = clic) — câblés dans `interaction.js` |
-| Accueil | Overlay `#accueil` (`index.html`), visible au chargement par-dessus la carte procédurale déjà générée : `#bAccueilProcedural` la révèle telle quelle, `#bAccueilOsm` importe la ville saisie dans `#villeAccueil` (défaut Angers) avant de fermer — câblé dans `interaction.js`. Pendant l'import, le loader `#statutOsm` (spinner + texte) reflète la dernière ligne de `journal()` via `hud.js` |
+| Boutons | `#bStep`, `#bEvent` (avance rapide `avancerJusquEvenement`), `#bAuto`, `#bSupply`, `#bCamps`, `#bReset` — câblés dans `interaction.js` |
+| Accueil | Overlay `#accueil` (`index.html`), visible au chargement par-dessus la carte procédurale déjà générée : `#bAccueilProcedural` la révèle — câblé dans `interaction.js`. L'entrée « Carte OSM » (saisie de ville + `genererOSM`) est débranchée pour le moment |
 | Teinte de camps | `etat.teinteCamps` (bouton `#bCamps`, actif par défaut) : coupe la surimpression rouge/bleu dans `construireFond` — le terrain apparaît nu, les frontières et le relief de supply restent |
 | Ombre de front | `distanceAuFront()` (chamfer L1 sur le raster, recalculé à chaque `construireFond`) : dégradé de couleur de camp sur `OMBRE_FRONT` px de chaque côté du front — toujours visible, y compris teinte de camps coupée |
 
@@ -43,5 +43,5 @@ auto_invoke: true
 
 1. `index.html` : le `<button id="…">` dans le bloc `.cmd`.
 2. `interaction.js` : câblage (`getElementById` local), état pressé via `aria-pressed`.
-3. Si l'action est asynchrone (cf. `bOsm`) : désactiver le bouton pendant l'attente (avec texte « Chargement… » si c'est long), resets journal/auto/date comme `bReset`.
+3. Si l'action est asynchrone : désactiver le bouton pendant l'attente (avec texte « Chargement… » si c'est long), resets journal/auto/date comme `bReset`.
 4. Texte utilisateur en français, style télégraphique du HUD existant.

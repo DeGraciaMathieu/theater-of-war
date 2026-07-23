@@ -5,16 +5,11 @@ const elFiche = document.getElementById("fiche");
 const elJournal = document.getElementById("journal");
 const elCptR = document.getElementById("cptRouge");
 const elCptB = document.getElementById("cptBleu");
-const elStatutOsm = document.getElementById("statutOsmTexte");
-
 export function journal(txt){
   const l = document.createElement("div");
   l.innerHTML = `<span style="opacity:.5">J${String(etat.jour).padStart(3,"0")}</span> ${txt}`;
   elJournal.prepend(l);
   while (elJournal.children.length > 60) elJournal.lastChild.remove();
-  // le journal est caché derrière l'overlay d'accueil : le loader OSM en
-  // reflète la dernière ligne tant qu'il est affiché
-  if (elStatutOsm && !elStatutOsm.parentElement.hidden) elStatutOsm.innerHTML = txt;
 }
 
 export function majCompteurs(){

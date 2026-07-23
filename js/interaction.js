@@ -4,7 +4,6 @@ import { cheminVers, estimerOrdre, donnerOrdre, annulerOrdre } from "./ordres.js
 import { porteeDepuis } from "./logistique.js";
 import { ficheVide, ficheUnite, ficheProv } from "./hud.js";
 import { genererCarte } from "./carte.js";
-import { genererOSM } from "./angers.js";
 import { tour, avancerJusquEvenement } from "./tour.js";
 
 const cv = document.getElementById("cv");
@@ -89,30 +88,6 @@ document.getElementById("bReset").onclick = () => {
   etat.auto = false; bAuto.setAttribute("aria-pressed", false); bAuto.textContent = "Lecture auto";
   ficheVide(); elDate.textContent = "JOUR 001";
 };
-const bOsm = document.getElementById("bOsm");
-const villeHud = document.getElementById("villeHud");
-bOsm.onclick = async () => {
-  bOsm.disabled = true;                    // pas de double requête Overpass
-  bOsm.textContent = "Chargement…";        // Overpass peut mettre plus d'une minute
-  elJournal.innerHTML = "";
-  etat.auto = false; bAuto.setAttribute("aria-pressed", false); bAuto.textContent = "Lecture auto";
-  await genererOSM(villeHud.value);
-  bOsm.disabled = false; bOsm.textContent = "Carte OSM";
-  ficheVide(); elDate.textContent = "JOUR 001";
-};
-villeHud.onkeydown = e => { if (e.key === "Enter") bOsm.click(); };
-
-// Accueil : la carte procédurale du démarrage est déjà prête derrière
-// l'overlay ; pour l'import OSM, on charge avant de révéler le théâtre.
+// Accueil : la carte procédurale du démarrage est déjà prête derrière l'overlay
 const elAccueil = document.getElementById("accueil");
 document.getElementById("bAccueilProcedural").onclick = () => { elAccueil.hidden = true; };
-const bAccueilOsm = document.getElementById("bAccueilOsm");
-const villeAccueil = document.getElementById("villeAccueil");
-bAccueilOsm.onclick = async () => {
-  bAccueilOsm.disabled = true;             // pas de double requête Overpass
-  bAccueilOsm.innerHTML = "Chargement…<small>Overpass peut mettre plus d'une minute</small>";
-  document.getElementById("statutOsm").hidden = false;
-  await genererOSM(villeAccueil.value);
-  elAccueil.hidden = true;
-};
-villeAccueil.onkeydown = e => { if (e.key === "Enter") bAccueilOsm.click(); };

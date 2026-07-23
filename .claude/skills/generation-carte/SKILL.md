@@ -35,7 +35,7 @@ Deux origines, un seul format de sortie : des provinces dans `etat.prov` + un ra
 
 1. Dupliquer le motif d'`angers.js` : seule la `BBOX` et le nom changent — la chaîne `chargerOverpass → construire → rasteriserVoronoi(eauMask) → relierPonts → installerTheatre` est déjà générique. Envisager de paramétrer `angers.js` par `BBOX` plutôt que de copier le fichier.
 2. `index.html` : ajouter le bouton dans le bloc `.cmd`.
-3. `interaction.js` : câbler le bouton sur le modèle de `bOsm` (désactivation pendant le fetch, reset journal/auto/date).
+3. `interaction.js` : câbler le bouton (désactivation pendant le fetch, reset journal/auto/date comme `bReset`).
 4. Garder le repli `genererCarte()` en cas d'échec Overpass.
 
 ## Pièges connus

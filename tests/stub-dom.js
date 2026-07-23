@@ -13,8 +13,6 @@ function fauxElement(){
     textContent: "", innerHTML: "", disabled: false,
     style: {}, children: [],
     firstChild: { nodeValue: "" },
-    parentElement: { hidden: true },      // overlay d'accueil réputé fermé
-
     setAttribute(){}, addEventListener(){}, prepend(){},
     getContext: fauxContexte,
     getBoundingClientRect: () => ({ left: 0, top: 0, width: 900, height: 560 }),

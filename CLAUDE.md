@@ -1,6 +1,6 @@
 # Théâtre — wargame opérationnel
 
-Wargame de logistique en navigateur : le joueur (Alliance, bleu) commande des corps d'armée sur une carte de provinces — procédurale ou tirée de la géographie réelle d'une ville au choix (OSM, géocodée via Nominatim) — contre l'IA (Fédération, rouge), où le ravitaillement décide de tout.
+Wargame de logistique en navigateur : le joueur (Alliance, bleu) commande des corps d'armée sur une carte de provinces procédurale — contre l'IA (Fédération, rouge), où le ravitaillement décide de tout. L'import OSM d'une ville réelle (`js/angers.js`, géocodage Nominatim + Overpass) existe mais est débranché de l'interface pour le moment.
 
 ## Stack
 
