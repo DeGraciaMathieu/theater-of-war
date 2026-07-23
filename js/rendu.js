@@ -28,11 +28,45 @@ function motifTerrain(t, x, y){
   }
 }
 
+const OMBRE_FRONT = 8;      // portée en pixels de l'ombre de camp le long du front
+
+// Distance L1 approchée de chaque pixel au front (limite entre camps opposés),
+// par double balayage chamfer — c'est elle qui porte l'ombre colorée du front
+function distanceAuFront(){
+  const { prov, siteIdx } = etat;
+  const d = new Uint8Array(RW*RH).fill(255);
+  for (let y = 0; y < RH; y++)
+    for (let x = 0; x < RW; x++){
+      const i = y*RW + x, s = siteIdx[i];
+      if (s < 0) continue;
+      const cp = prov[s].proprio;
+      if (!cp) continue;
+      const dr = x+1 < RW ? siteIdx[i+1] : -1;
+      const db = y+1 < RH ? siteIdx[i+RW] : -1;
+      if (dr >= 0 && prov[dr].proprio && prov[dr].proprio !== cp){ d[i] = 0; d[i+1] = 0; }
+      if (db >= 0 && prov[db].proprio && prov[db].proprio !== cp){ d[i] = 0; d[i+RW] = 0; }
+    }
+  for (let y = 0; y < RH; y++)
+    for (let x = 0; x < RW; x++){
+      const i = y*RW + x;
+      if (x > 0 && d[i-1] + 1 < d[i]) d[i] = d[i-1] + 1;
+      if (y > 0 && d[i-RW] + 1 < d[i]) d[i] = d[i-RW] + 1;
+    }
+  for (let y = RH-1; y >= 0; y--)
+    for (let x = RW-1; x >= 0; x--){
+      const i = y*RW + x;
+      if (x < RW-1 && d[i+1] + 1 < d[i]) d[i] = d[i+1] + 1;
+      if (y < RH-1 && d[i+RW] + 1 < d[i]) d[i] = d[i+RW] + 1;
+    }
+  return d;
+}
+
 // Le fond ne dépend que de l'état du théâtre : on ne le recalcule qu'au
 // changement, pas à chaque frame. 504 000 pixels, ce serait cher pour rien.
 function construireFond(){
   const { prov, siteIdx, survol, vueSupply, imgData } = etat;
   const d = imgData.data;
+  const dFront = distanceAuFront();
   for (let y = 0; y < RH; y++){
     for (let x = 0; x < RW; x++){
       const i = y*RW + x, s = siteIdx[i];
@@ -89,21 +123,22 @@ function construireFond(){
         r = r*0.6 + 224*0.4; g = g*0.6 + 165*0.4; b = b*0.6 + 60*0.4;
       }
 
-      // frontières (un bord d'eau garde sa couleur : le contraste suffit).
-      // La ligne de front — camp contre camp — se marque des deux côtés de la
-      // limite (2 px) : c'est la lecture stratégique n°1 de la carte
+      // le front : chaque côté de la ligne porte l'ombre de son camp, dégradée
+      // sur OMBRE_FRONT px — qui tient quel côté se lit à la couleur, pas au
+      // trait. Elle reste même teinte de camps coupée : c'est le repère du front.
+      if (p.proprio && dFront[i] < OMBRE_FRONT){
+        const m = (1 - dFront[i]/OMBRE_FRONT) * 0.55;
+        const gr = p.proprio === ROUGE ? 255 : 70;
+        const gg = p.proprio === ROUGE ? 70 : 140;
+        const gb = p.proprio === ROUGE ? 55 : 230;
+        r = r*(1-m) + gr*m; g = g*(1-m) + gg*m; b = b*(1-m) + gb*m;
+      }
+
+      // frontières (un bord d'eau garde sa couleur : le contraste suffit) —
+      // au front, ce trait fin de 1 px garde la limite nette sous l'ombre
       const droite = x+1 < RW ? siteIdx[i+1] : s;
       const bas    = y+1 < RH ? siteIdx[i+RW] : s;
-      const gauche = x > 0 ? siteIdx[i-1] : s;
-      const haut   = y > 0 ? siteIdx[i-RW] : s;
-      let front = false;
-      for (const a of [droite, bas, gauche, haut]){
-        if (a === s || a < 0) continue;
-        const q = prov[a];
-        if (q.proprio && p.proprio && q.proprio !== p.proprio){ front = true; break; }
-      }
-      if (front){ r = 10; g = 10; b = 10; }
-      else if (droite !== s || bas !== s){
+      if (droite !== s || bas !== s){
         const autreIdx = droite !== s ? droite : bas;
         if (autreIdx >= 0){
           if (prov[autreIdx].proprio !== p.proprio){ r = 12; g = 12; b = 12; }
