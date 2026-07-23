@@ -57,7 +57,9 @@ export function genererCarte(){
     else if (h <= sMarais) t = 4;                // marais (creux)
     else if (h <= sBocage) t = 1;                // bocage
     if (t <= 1 && vegetation[i] >= sBois) t = 5; // bois (futaies des terres basses)
-    prov.push(creerProvince(i, s.x, s.y, t, alea() < 0.13));
+    const ville = alea() < 0.13;
+    if (ville) t = 7;                            // nœud routier → urbain, lisible sur la carte
+    prov.push(creerProvince(i, s.x, s.y, t, ville));
   });
 
   rasteriserVoronoi(null);

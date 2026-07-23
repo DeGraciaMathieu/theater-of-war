@@ -45,3 +45,11 @@ test("la carte procédurale contient du bois, sans en être couverte", () => {
   // il ne peut pas dépasser le quantile qui le définit
   assert.ok(bois <= NB_PROV * 0.25, `carte couverte de bois : ${bois} provinces`);
 });
+
+test("les nœuds routiers procéduraux portent le terrain urbain", () => {
+  genererCarte();
+  const URBAIN = TERRAINS.findIndex(t => t.nom === "urbain");
+  const villes = etat.prov.filter(p => p.ville);
+  assert.ok(villes.length > 0, "aucun nœud routier");
+  for (const p of villes) assert.equal(p.terrain, URBAIN);
+});
