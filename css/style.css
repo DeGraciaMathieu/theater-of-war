@@ -67,8 +67,9 @@ button.primaire:hover{background:#f0b654;color:var(--encre)}
 .fiche .vide{color:var(--os-faible)}
 .jauge{height:6px;background:#232823;margin:3px 0 8px;position:relative}
 .jauge i{position:absolute;inset:0 auto 0 0;display:block}
+.bloc:last-child{border-right:none}
 .journal{width:min(38vw,400px);flex:none;font-family:"Share Tech Mono",monospace;
-  font-size:13px;line-height:1.5;color:var(--os-faible);border-right:none;
+  font-size:13px;line-height:1.5;color:var(--os-faible);
   min-height:0;overflow-y:auto;overscroll-behavior:contain}
 .journal div{margin-bottom:5px}
 .journal b{color:var(--os);font-weight:400}
@@ -89,6 +90,7 @@ button.primaire:hover{background:#f0b654;color:var(--encre)}
 
 @media (max-width:720px){
   .hud{flex-wrap:wrap;height:auto;max-height:42vh}
-  .journal{width:100%;height:96px;border-top:1px solid var(--trait)}
+  /* sur mobile le journal repasse en dernier, pleine largeur sous les commandes */
+  .journal{width:100%;height:96px;border-top:1px solid var(--trait);order:1}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
