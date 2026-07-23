@@ -1,4 +1,4 @@
-import { ROUGE, BLEU } from "./config.js";
+import { ROUGE, BLEU, AVANCE_MAX } from "./config.js";
 import { etat } from "./etat.js";
 import { calculerSupply } from "./logistique.js";
 import { iaRouge } from "./ia.js";
@@ -31,6 +31,39 @@ export function tour(){
     const sel = etat.unites.find(x => x.id === etat.selection);
     if (sel) ficheUnite(sel); else { etat.selection = null; ficheVide(); }
   }
+}
+
+// Avance rapide : enchaîner les jours tant qu'aucune décision n'attend le
+// joueur — on saute l'attente (transmission, marche), jamais les décisions.
+export function avancerJusquEvenement(){
+  const depart = etat.jour;
+  const motif = boucleAvance();
+  if (etat.jour > depart)
+    journal(`<b>Avance</b> J${String(depart).padStart(3,"0")} → J${String(etat.jour).padStart(3,"0")} · ${motif}`);
+  return motif;
+}
+
+function boucleAvance(){
+  if (etat.fini) return "partie terminée";
+  for (let n = 0; n < AVANCE_MAX; n++){
+    const ordresBleus = etat.ordres
+      .filter(o => etat.unites.some(u => u.id === o.unite && u.camp === BLEU))
+      .map(o => o.unite);
+    const corpsBleus = etat.unites.filter(u => u.camp === BLEU).length;
+    const alertes = new Set(etat.prov.filter(p => p.alerte).map(p => p.id));
+    const poches = etat.poches.length;
+
+    tour();
+
+    if (etat.fini) return "fin de partie";
+    if (etat.batailles.length) return "combat engagé";
+    if (etat.unites.filter(u => u.camp === BLEU).length < corpsBleus) return "corps perdu";
+    // u.coupe posé ce jour = bascule d'encerclement, même si le nombre de poches n'a pas bougé
+    if (etat.poches.length > poches || etat.unites.some(u => u.coupe === etat.jour)) return "poche formée";
+    if (ordresBleus.some(id => !etat.ordres.some(o => o.unite === id))) return "corps à destination";
+    if (etat.prov.some(p => p.alerte && !alertes.has(p.id))) return "axe saturé";
+  }
+  return "rien à signaler";
 }
 
 function verifierFin(){

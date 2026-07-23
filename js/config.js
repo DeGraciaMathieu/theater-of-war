@@ -2,6 +2,7 @@ export const RW = 900, RH = 560;          // résolution du raster de provinces
 export const NB_PROV = 220;
 export const PORTEE = 15;                 // budget de coût logistique depuis un dépôt
 export const AVANCE_DEPOT = 0.6;          // position du dépôt avancé : fraction du chemin coin → centre
+export const AVANCE_MAX = 30;             // plafond de l'avance rapide : jamais plus de jours d'un coup
 export const ROUGE = 1, BLEU = 2;
 
 // « debit » = capacité de transit, en points de ravitaillement (1 pt ≈ 12 000 hommes)
