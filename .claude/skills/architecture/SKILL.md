@@ -12,7 +12,7 @@ App statique sans build : `index.html` charge `js/main.js` en module ES ; tout l
 
 | Module | Rôle | Dépend de |
 |---|---|---|
-| `config.js` | Constantes d'équilibrage : `RW`/`RH`, `NB_PROV`, `PORTEE`, `AVANCE_DEPOT`, `ROUGE`/`BLEU`, `TERRAINS` (0-4 procédural, 5-7 Angers) | — |
+| `config.js` | Constantes d'équilibrage : `RW`/`RH`, `NB_PROV`, `PORTEE`, `AVANCE_DEPOT`, `AVANCE_MAX`, `ROUGE`/`BLEU`, `TERRAINS` (0-4 procédural, 5-7 Angers) | — |
 | `etat.js` | Objet `etat` (tout l'état mutable) + `alea()` + requêtes `ennemiSur`, `unitesDe`, `ravitaillement` | — |
 | `carte.js` | Génération procédurale + briques partagées : `creerProvince`, `rasteriserVoronoi(eauMask)`, `installerTheatre`, `poserBase` | logistique, hud |
 | `angers.js` | Carte réelle : Overpass → provinces (eau, ponts, terrains OSM, `ville`), repli sur `genererCarte` | carte, hud |
@@ -20,7 +20,7 @@ App statique sans build : `index.html` charge `js/main.js` en module ES ; tout l
 | `ordres.js` | `cheminVers`, `marche`, `estimerOrdre`, `donnerOrdre`, `executerOrdres` | logistique, combat, hud |
 | `combat.js` | `combat`, `attrition` (+ `detruire`/`nettoyer` privés) | hud (journal) |
 | `ia.js` | `iaRouge` : ordres du camp rouge | ordres |
-| `tour.js` | `tour` (séquence d'un jour), `verifierFin` — touche `#date`, `#bStep`, `#bAuto` | logistique, ia, ordres, combat, hud |
+| `tour.js` | `tour` (séquence d'un jour), `avancerJusquEvenement` (avance rapide jusqu'à une décision), `verifierFin` — touche `#date`, `#bStep`, `#bAuto` | logistique, ia, ordres, combat, hud |
 | `rendu.js` | `dessiner` : fond raster en cache (`etat.sale`), pions, itinéraires, axes de supply, batailles, légende | ordres (marche), logistique (axeRavitaillement) |
 | `hud.js` | `journal`, `majCompteurs`, `ficheUnite`/`ficheProv`/`ficheVide` | — |
 | `interaction.js` | Souris (survol, sélection, aperçu d'ordre, portée de dépôt) + boutons du HUD | ordres, logistique, hud, carte, angers, tour |

@@ -28,7 +28,7 @@ auto_invoke: true
 | Journal | `journal(txt)` (`js/hud.js`) : préfixe J-jour, 60 lignes max — seule sortie autorisée de la logique |
 | Compteurs d'effectifs | `majCompteurs` → `#cptRouge` / `#cptBleu` |
 | Sélection / ordre à la souris | `pointerdown` (`interaction.js`) : corps bleu → sélection ; province → ordre ; sa propre case → annulation |
-| Boutons | `#bStep`, `#bAuto`, `#bSupply`, `#bCamps`, `#bReset`, `#bAngers` — câblés dans `interaction.js` |
+| Boutons | `#bStep`, `#bEvent` (avance rapide `avancerJusquEvenement`), `#bAuto`, `#bSupply`, `#bCamps`, `#bReset`, `#bAngers` — câblés dans `interaction.js` |
 | Teinte de camps | `etat.teinteCamps` (bouton `#bCamps`, actif par défaut) : coupe la surimpression rouge/bleu dans `construireFond` — le terrain apparaît nu, les frontières et le relief de supply restent |
 
 ## Ajouter un élément visuel sur la carte
