@@ -41,6 +41,6 @@ Fais une revue complète des changements en cours de ce dépôt.
 
 ## Finaliser
 
-1. Lance `node --test tests/` et rapporte le résultat réel.
+1. Lance `npm test` et rapporte le résultat réel.
 2. Rapport structuré : une ligne par item ci-dessus avec statut **OK / VIOLATION / N/A** (+ fichier:ligne pour chaque violation).
 3. Verdict global : prêt à commiter, ou liste ordonnée des corrections à faire.

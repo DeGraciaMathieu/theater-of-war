@@ -14,5 +14,5 @@ Vérifie que les changements en cours respectent les conventions du projet.
    - `alea()` et non `Math.random()` ; `etat.sale = true` si visuel impacté ;
    - français + terminologie du domaine ; pas de dépendance ni de build ajoutés.
 5. Cohérence tests/doc : si le comportement a changé, `tests/` suit (mapping du skill `testing`) ; si un périmètre de skill a changé, le `SKILL.md` et la table de `CLAUDE.md` suivent.
-6. Lance `node --test tests/` et rapporte le résultat réel.
+6. Lance `npm test` et rapporte le résultat réel.
 7. Rapport : un statut **OK / VIOLATION / N/A** par item (fichier:ligne pour les violations), puis verdict global en une phrase.

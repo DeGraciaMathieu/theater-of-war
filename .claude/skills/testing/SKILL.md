@@ -6,7 +6,7 @@ auto_invoke: true
 
 # Tests
 
-**Commande : `node --test tests/`** (ou `npm test`). Runner natif de Node ≥ 18, zéro dépendance. La suite doit être verte avant de déclarer une tâche terminée — le hook Stop (`scripts/run-tests.sh`) la relance de toute façon.
+**Commande : `node --test "tests/*.test.js"`** (ou `npm test`) — glob obligatoire, les Node récents n'acceptent plus un dossier en argument. Runner natif de Node, zéro dépendance. La suite doit être verte avant de déclarer une tâche terminée — le hook Stop (`scripts/run-tests.sh`) la relance de toute façon.
 
 ## Philosophie
 
@@ -31,4 +31,4 @@ Non couvert (assumé) : `rendu.js`, `hud.js`, `interaction.js`, `main.js` (affic
 2. Nouveau sous-système → nouveau fichier `tests/<domaine>.test.js`, squelette : `import "./stub-dom.js";` puis `node:test` + `node:assert/strict` + `carteRuban`/`poserCorps`.
 3. Si la carte-ruban ne suffit pas (eau, ponts…), construire la mini-carte à la main dans le test — ne pas complexifier la fixture commune.
 4. Piloter le temps à la main comme dans `ordres-combat.test.js` : poser `etat.jour`, appeler `executerOrdres`/`attrition` directement plutôt que de boucler sur `tour()`.
-5. Lancer `node --test tests/` et vérifier le vert avant de conclure.
+5. Lancer `npm test` et vérifier le vert avant de conclure.

@@ -27,7 +27,7 @@ Dérouler les étapes dans l'ordre. Ne pas sauter la compréhension ni les tests
 ## 3. Tester
 
 - Ajouter le(s) test(s) macro selon le skill `testing` (carte-ruban, invariants robustes à l'aléatoire).
-- `node --test tests/` → corriger jusqu'au vert. Après 2 tentatives infructueuses sur la même erreur, reprendre le plan au lieu d'insister.
+- `npm test` → corriger jusqu'au vert. Après 2 tentatives infructueuses sur la même erreur, reprendre le plan au lieu d'insister.
 - Vérifier aussi à la main dans le navigateur si le visuel est concerné (`python3 -m http.server`).
 
 ## 4. Synchroniser la doc

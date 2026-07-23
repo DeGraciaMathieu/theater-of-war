@@ -6,7 +6,7 @@ Wargame de logistique en navigateur : le joueur (Alliance, bleu) commande des co
 
 - **Vanilla JS (modules ES natifs), HTML, CSS.** Aucune dépendance, aucun build, aucun framework. Le `package.json` ne sert qu'à marquer `"type": "module"` pour Node — ne jamais y ajouter de dépendance sans discussion préalable.
 - **Dev** : servir la racine en HTTP (`python3 -m http.server`), ouvrir `index.html`. Pas de rechargement à chaud.
-- **Test** : `node --test tests/` (ou `npm test`). Runner natif de Node ≥ 18, stub DOM dans `tests/stub-dom.js`.
+- **Test** : `node --test "tests/*.test.js"` (ou `npm test`) — glob obligatoire, les Node récents n'acceptent plus un dossier en argument. Stub DOM dans `tests/stub-dom.js`.
 - **Lint/format** : aucun outil. Les conventions ci-dessous font foi.
 - **Prod** : Vercel, site statique. `vercel.json` fournit les proxys Overpass `/api/overpass` et `/api/overpass-kumi` (contournement CORS).
 
@@ -23,7 +23,7 @@ Wargame de logistique en navigateur : le joueur (Alliance, bleu) commande des co
 
 ## Comportement
 
-- **Ne jamais déclarer une tâche terminée sans avoir lancé les tests (`node --test tests/`) et vérifié qu'ils passent.**
+- **Ne jamais déclarer une tâche terminée sans avoir lancé les tests (`npm test`) et vérifié qu'ils passent.**
 - **Si une approche échoue après 2 tentatives, reprendre le plan avant de continuer** — ne pas s'enfoncer.
 - Avant toute restructuration de code, clarifier la structure cible exacte avec l'utilisateur.
 - Implémenter uniquement ce qui est demandé ; noter les idées annexes, ne pas les coder.
