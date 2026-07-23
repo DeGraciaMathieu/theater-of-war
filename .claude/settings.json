@@ -11,6 +11,32 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "agent",
+            "if": "Edit(js/*)",
+            "prompt": "Un fichier de logique du jeu vient d'être modifié : $ARGUMENTS\n\nVérifie que la page des règles (regles.html, à la racine du projet) reste cohérente avec ce changement :\n1. Les chiffres de la page sont injectés depuis js/config.js par le <script type=\"module\"> en bas de regles.html. Vérifie que chaque constante importée là (TERRAINS, NB_PROV, PORTEE, AVANCE_MAX, SEUIL_PERCEE, ARMEE) existe toujours dans js/config.js avec la même forme (mêmes champs), et qu'aucune valeur chiffrée du jeu n'est écrite en dur dans la page.\n2. Si le changement modifie un mécanisme décrit dans la prose (terrains, ordres, latence, marche, interdiction, ravitaillement, congestion, poches, combat, percée, recul, attrition, victoire), vérifie que la section correspondante de regles.html dit toujours vrai.\n\nSi tout est cohérent, réponds OK. Sinon, bloque en indiquant précisément quelle section ou quel identifiant de regles.html doit être mis à jour et pourquoi.",
+            "timeout": 120,
+            "statusMessage": "Cohérence regles.html…"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "agent",
+            "if": "Write(js/*)",
+            "prompt": "Un fichier de logique du jeu vient d'être modifié : $ARGUMENTS\n\nVérifie que la page des règles (regles.html, à la racine du projet) reste cohérente avec ce changement :\n1. Les chiffres de la page sont injectés depuis js/config.js par le <script type=\"module\"> en bas de regles.html. Vérifie que chaque constante importée là (TERRAINS, NB_PROV, PORTEE, AVANCE_MAX, SEUIL_PERCEE, ARMEE) existe toujours dans js/config.js avec la même forme (mêmes champs), et qu'aucune valeur chiffrée du jeu n'est écrite en dur dans la page.\n2. Si le changement modifie un mécanisme décrit dans la prose (terrains, ordres, latence, marche, interdiction, ravitaillement, congestion, poches, combat, percée, recul, attrition, victoire), vérifie que la section correspondante de regles.html dit toujours vrai.\n\nSi tout est cohérent, réponds OK. Sinon, bloque en indiquant précisément quelle section ou quel identifiant de regles.html doit être mis à jour et pourquoi.",
+            "timeout": 120,
+            "statusMessage": "Cohérence regles.html…"
+          }
+        ]
+      }
     ]
   }
 }
