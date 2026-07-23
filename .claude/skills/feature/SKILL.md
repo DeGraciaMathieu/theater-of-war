@@ -15,7 +15,7 @@ Dérouler les étapes dans l'ordre. Ne pas sauter la compréhension ni les tests
 - Poser les questions de clarification **avant de coder**, via questions cliquables :
   - valeurs numériques (coûts, seuils, portées — elles iront dans `config.js`) ;
   - interactions avec l'existant (comment ça se combine avec supply/combat/IA ?) ;
-  - cas limites (province d'eau, corps encerclé, partie finie, carte d'Angers vs procédurale).
+  - cas limites (province d'eau, corps encerclé, partie finie, carte OSM vs procédurale).
 - Si la demande est une restructuration : clarifier la structure cible exacte avant tout.
 
 ## 2. Implémenter

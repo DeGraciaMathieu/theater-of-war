@@ -383,7 +383,7 @@ function dessinerConvois(sx, sy){
 // Légende des terrains : échantillon de motif + coût de marche, pour que le
 // joueur sache lire ce qu'il voit sur la carte
 function dessinerLegende(w, h){
-  // seulement les terrains de la carte affichée (procédurale ou Angers)
+  // seulement les terrains de la carte affichée (procédurale ou OSM)
   const items = [...new Set(etat.prov.map(p => p.terrain))].sort((a,b) => a-b);
   const lh = 21, pad = 9, cw = 30, sh = 16;
   const bh = 19 + items.length*lh + pad;

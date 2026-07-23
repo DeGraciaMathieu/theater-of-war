@@ -12,10 +12,10 @@ App statique sans build : `index.html` charge `js/main.js` en module ES ; tout l
 
 | Module | Rôle | Dépend de |
 |---|---|---|
-| `config.js` | Constantes d'équilibrage : `RW`/`RH`, `NB_PROV`, `PORTEE`, `AVANCE_DEPOT`, `AVANCE_MAX`, `ROUGE`/`BLEU`, `TERRAINS` (0-4 procédural, 5-7 Angers) | — |
+| `config.js` | Constantes d'équilibrage : `RW`/`RH`, `NB_PROV`, `PORTEE`, `AVANCE_DEPOT`, `AVANCE_MAX`, `ROUGE`/`BLEU`, `TERRAINS` (0-4 procédural, 5 et 7 partagés, 6 OSM) | — |
 | `etat.js` | Objet `etat` (tout l'état mutable) + `alea()` + requêtes `ennemiSur`, `unitesDe`, `ravitaillement` | — |
 | `carte.js` | Génération procédurale + briques partagées : `creerProvince`, `rasteriserVoronoi(eauMask)`, `installerTheatre`, `poserBase` | logistique, hud |
-| `angers.js` | Carte réelle : Overpass → provinces (eau, ponts, terrains OSM, `ville`), repli sur `genererCarte` | carte, hud |
+| `angers.js` | Carte réelle d'une ville au choix : Nominatim (géocodage) + Overpass → provinces (eau, ponts, terrains OSM, `ville`), repli sur `genererCarte` | carte, hud |
 | `logistique.js` | `calculerSupply` (Dijkstra), congestion, `detecterPoches`, `distQG` | hud (journal) |
 | `ordres.js` | `cheminVers`, `marche`, `estimerOrdre`, `donnerOrdre`, `executerOrdres` | logistique, combat, hud |
 | `combat.js` | `combat`, `attrition` (+ `detruire`/`nettoyer` privés) | hud (journal) |

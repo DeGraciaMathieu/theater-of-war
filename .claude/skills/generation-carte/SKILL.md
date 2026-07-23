@@ -1,6 +1,6 @@
 ---
 name: generation-carte
-description: "Use when tu travailles sur la génération de carte : provinces, Voronoï, terrains, eau, ponts, carte procédurale (carte.js) ou carte réelle d'Angers (angers.js)."
+description: "Use when tu travailles sur la génération de carte : provinces, Voronoï, terrains, eau, ponts, carte procédurale (carte.js) ou carte réelle d'une ville OSM (angers.js)."
 auto_invoke: true
 ---
 
@@ -13,14 +13,14 @@ Deux origines, un seul format de sortie : des provinces dans `etat.prov` + un ra
 | Concept | Implémentation |
 |---|---|
 | Province | Objet créé par `creerProvince(id, x, y, terrain, ville)` — `js/carte.js` |
-| Terrain | Index dans `TERRAINS` (`js/config.js`) : 0 plaine, 1 bocage, 2 collines, 3 montagne, 4 marais (procédural) ; 5 bois et 7 urbain (les deux cartes) ; 6 berges (Angers) |
+| Terrain | Index dans `TERRAINS` (`js/config.js`) : 0 plaine, 1 bocage, 2 collines, 3 montagne, 4 marais (procédural) ; 5 bois et 7 urbain (les deux cartes) ; 6 berges (OSM) |
 | Découpage en provinces | `rasteriserVoronoi(eauMask)` — Voronoï par buckets + centroïdes + adjacence, `js/carte.js` |
 | Adjacence | `p.voisins` (symétrique), construite pixel par pixel ; jamais à travers l'eau |
 | Eau | `eauMask` (Uint8Array) construit dans `angers.js` : polygones `natural=water` remplis (`remplirPolygone`) + rivières épaissies (`traceLarge`) |
 | Pont | `relierPonts(routes)` (`js/angers.js`) : une route qui franchit l'eau ajoute l'adjacence entre les deux rives |
 | Relief procédural | Bruit à bosses + seuils par quantiles dans `genererCarte` (`js/carte.js`) ; un second champ de bosses (végétation) boise le haut de son quantile parmi plaine/bocage |
 | Terrain OSM | `terrainDepuisLanduse` (`js/angers.js`) : forest/wood→bois, residential/industrial/commercial→urbain, farmland→plaine, meadow→bocage ; proximité d'eau→berges |
-| Nœud routier (`ville`) | Procédural : `alea() < 0.13`, prend le terrain urbain (prime sur le relief) ; Angers : province à < 16 px d'une route de rang ≥ 3, terrain inchangé (l'urbain y vient du landuse) |
+| Nœud routier (`ville`) | Procédural : `alea() < 0.13`, prend le terrain urbain (prime sur le relief) ; OSM : province à < 16 px d'une route de rang ≥ 3, terrain inchangé (l'urbain y vient du landuse) |
 | Camps, dépôts, QG, corps initiaux | `installerTheatre` + `poserBase` (`js/carte.js`) : partage NE/SO, 2 dépôts d'arrière + 1 dépôt avancé (à `AVANCE_DEPOT` du chemin coin → centre) + 1 QG + 8 corps par camp |
 | Requête Overpass | `chargerOverpass` (`js/angers.js`) : POST `data=` urlencodé, 4 miroirs (2 proxys Vercel + 2 directs), 2 passes |
 
@@ -35,7 +35,7 @@ Deux origines, un seul format de sortie : des provinces dans `etat.prov` + un ra
 
 1. Dupliquer le motif d'`angers.js` : seule la `BBOX` et le nom changent — la chaîne `chargerOverpass → construire → rasteriserVoronoi(eauMask) → relierPonts → installerTheatre` est déjà générique. Envisager de paramétrer `angers.js` par `BBOX` plutôt que de copier le fichier.
 2. `index.html` : ajouter le bouton dans le bloc `.cmd`.
-3. `interaction.js` : câbler le bouton sur le modèle de `bAngers` (désactivation pendant le fetch, reset journal/auto/date).
+3. `interaction.js` : câbler le bouton sur le modèle de `bOsm` (désactivation pendant le fetch, reset journal/auto/date).
 4. Garder le repli `genererCarte()` en cas d'échec Overpass.
 
 ## Pièges connus

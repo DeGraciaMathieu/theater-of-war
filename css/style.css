@@ -72,6 +72,15 @@ button.primaire:hover{background:#f0b654;color:var(--encre)}
   min-height:0;overflow-y:auto;overscroll-behavior:contain}
 .journal div{margin-bottom:5px}
 .journal b{color:var(--os);font-weight:400}
+/* saisie de ville pour l'import OSM : même matière que les boutons */
+input.ville{
+  font-family:inherit;font-weight:500;font-size:14px;letter-spacing:.04em;
+  background:#12150f;color:var(--os);border:1px solid var(--trait);
+  padding:8px 10px;min-width:0;
+}
+input.ville::placeholder{color:var(--os-faible)}
+input.ville:focus-visible{outline:2px solid var(--ambre);outline-offset:2px}
+
 /* écran d'accueil : choix du théâtre avant de révéler la carte */
 .accueil{
   position:fixed;inset:0;z-index:10;
@@ -82,8 +91,18 @@ button.primaire:hover{background:#f0b654;color:var(--encre)}
 .accueil-boite{display:flex;flex-direction:column;gap:18px;text-align:center;padding:24px}
 .accueil-boite .titre{font-size:34px}
 .accueil-boite p{color:var(--os-faible);letter-spacing:.08em}
-.accueil-choix{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.accueil-choix{display:flex;gap:14px;justify-content:center;align-items:stretch;flex-wrap:wrap}
 .accueil-choix button{padding:14px 22px;font-size:15px}
+.accueil-osm{display:flex;flex-direction:column;gap:7px}
+.accueil-osm input{text-align:center}
+.accueil-osm button{flex:1}
+.accueil-statut{display:flex;align-items:center;justify-content:center;gap:10px;
+  font-size:14px;color:var(--os-faible)}
+.accueil-statut[hidden]{display:none}
+.accueil-statut i{flex:none;width:13px;height:13px;border-radius:50%;
+  border:2px solid var(--trait);border-top-color:var(--ambre);
+  animation:rotation .9s linear infinite}
+@keyframes rotation{to{transform:rotate(360deg)}}
 .accueil-choix small{display:block;font-weight:500;font-size:12px;letter-spacing:.05em;
   text-transform:none;opacity:.75;margin-top:5px}
 

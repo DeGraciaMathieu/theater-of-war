@@ -3,8 +3,27 @@ import { etat, alea } from "./etat.js";
 import { genererCarte, reinitialiser, creerProvince, rasteriserVoronoi, installerTheatre } from "./carte.js";
 import { journal } from "./hud.js";
 
-// ---- zone : bounding box autour d'Angers ------------------------------------
-const BBOX = { s:47.446, w:-0.598, n:47.505, e:-0.512 };
+// ---- zone : bounding box autour de la ville choisie -------------------------
+// même emprise au sol que la carte d'Angers d'origine (~6,5 × 6,5 km), la
+// largeur en longitude étant corrigée par la latitude pour rester constante
+const DEMI_LAT = 0.0295;
+const DEMI_LON_EQUATEUR = 0.043 * Math.cos(47.5 * Math.PI/180);
+function bboxAutour(lat, lon){
+  const demiLon = DEMI_LON_EQUATEUR / Math.max(0.2, Math.cos(lat * Math.PI/180));
+  return { s: lat - DEMI_LAT, n: lat + DEMI_LAT, w: lon - demiLon, e: lon + demiLon };
+}
+
+// Nominatim accepte les requêtes cross-origin ; un seul résultat suffit
+async function geocoder(nom){
+  try{
+    const rep = await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=1&q="
+      + encodeURIComponent(nom));
+    if (!rep.ok) return null;
+    const res = await rep.json();
+    if (!res.length) return null;
+    return { lat: +res[0].lat, lon: +res[0].lon, nom: res[0].display_name.split(",")[0] };
+  }catch(e){ return null; }
+}
 
 const MIROIRS = [
   "/api/overpass",                                    // proxys Vercel (évitent CORS), 404 en local
@@ -13,8 +32,8 @@ const MIROIRS = [
   "https://overpass.kumi.systems/api/interpreter",
 ];
 
-function requeteOverpass(){
-  const bb = `${BBOX.s},${BBOX.w},${BBOX.n},${BBOX.e}`;
+function requeteOverpass(bbox){
+  const bb = `${bbox.s},${bbox.w},${bbox.n},${bbox.e}`;
   return `[out:json][timeout:30];(
     way["natural"="water"](${bb});
     way["waterway"="riverbank"](${bb});
@@ -25,28 +44,40 @@ function requeteOverpass(){
   );out geom;`;
 }
 
-export async function genererAngers(){
-  journal("Interrogation d'OpenStreetMap (Angers)…");
-  const data = await chargerOverpass();
+export async function genererOSM(nomVille){
+  const nom = (nomVille || "").trim() || "Angers";
+  journal(`Recherche de « ${nom} » (Nominatim)…`);
+  const lieu = await geocoder(nom);
+  if (!lieu){
+    journal(`<b>Ville introuvable</b> — repli sur une carte procédurale.`);
+    genererCarte();
+    return;
+  }
+  journal(`Interrogation d'OpenStreetMap (${lieu.nom})…`);
+  const bbox = bboxAutour(lieu.lat, lieu.lon);
+  const data = await chargerOverpass(bbox);
   if (!data){
     journal("<b>Overpass injoignable</b> — repli sur une carte procédurale.");
     genererCarte();
     return;
   }
-  construire(data);
+  journal(`Données reçues (${data.elements.length} objets) — construction du théâtre…`);
+  construire(data, bbox, lieu.nom);
 }
 
 // Les serveurs Overpass publics sont capricieux (406/429/5xx transitoires
 // selon le backend touché) : on refait une passe sur les miroirs avant
 // d'abandonner. Format formulaire « data= » exigé, en brut c'est un 406.
-async function chargerOverpass(){
+async function chargerOverpass(bbox){
   for (let passe = 0; passe < 2; passe++){
     if (passe) await new Promise(r => setTimeout(r, 1500));
-    for (const url of MIROIRS){
+    for (let i = 0; i < MIROIRS.length; i++){
+      // les serveurs publics peuvent mettre plus d'une minute : dire où on en est
+      journal(`Serveur Overpass ${i+1}/${MIROIRS.length}${passe ? " · seconde tentative" : ""}…`);
       try{
-        const rep = await fetch(url, { method:"POST",
+        const rep = await fetch(MIROIRS[i], { method:"POST",
           headers:{ "Content-Type":"application/x-www-form-urlencoded" },
-          body: "data=" + encodeURIComponent(requeteOverpass()) });
+          body: "data=" + encodeURIComponent(requeteOverpass(bbox)) });
         if (!rep.ok) throw new Error("HTTP " + rep.status);
         return await rep.json();
       }catch(e){ /* miroir suivant */ }
@@ -56,11 +87,11 @@ async function chargerOverpass(){
 }
 
 // ---- OSM → provinces au format du jeu ---------------------------------------
-function construire(data){
+function construire(data, bbox, nom){
   const eaux = [], landuse = [], routes = [], rivieres = [];
   for (const el of data.elements){
     if (!el.geometry || el.geometry.length < 2) continue;
-    const pts = el.geometry.map(g => proj(g.lat, g.lon));
+    const pts = el.geometry.map(g => proj(g.lat, g.lon, bbox));
     const t = el.tags || {};
     if (t.natural === "water" || t.waterway === "riverbank") eaux.push(pts);
     else if (t.waterway === "river") rivieres.push(pts);
@@ -117,7 +148,7 @@ function construire(data){
   }
 
   installerTheatre();
-  journal(`Angers — ${eaux.length} plans d'eau, ${routes.length} routes · données © OpenStreetMap.`);
+  journal(`${nom} — ${eaux.length} plans d'eau, ${routes.length} routes · données © OpenStreetMap.`);
 }
 
 function rangRoute(h){
@@ -135,7 +166,7 @@ function terrainDepuisLanduse(x, y, landuse){
       }
     }
   }
-  return 1; // hors zone décrite : bocage par défaut (campagne angevine)
+  return 1; // hors zone décrite : bocage par défaut (campagne)
 }
 
 function prochEau(x, y, eauMask){
@@ -166,8 +197,8 @@ function relierPonts(routes){
 
 // ---- géométrie --------------------------------------------------------------
 // projection équirectangulaire (correction de latitude)
-function proj(lat, lon){
-  return [ (lon-BBOX.w)/(BBOX.e-BBOX.w)*RW, (BBOX.n-lat)/(BBOX.n-BBOX.s)*RH ];
+function proj(lat, lon, bbox){
+  return [ (lon-bbox.w)/(bbox.e-bbox.w)*RW, (bbox.n-lat)/(bbox.n-bbox.s)*RH ];
 }
 
 function pip(x, y, poly){
