@@ -24,6 +24,9 @@ export function combat(att, defs, lieu){
   const perce = ratio > 0.58;
   etat.batailles.push({                // événement affiché pendant l'animation du jour
     prov: lieu.id, x: lieu.cx, y: lieu.cy,
+    // origine de l'assaut : att.prov est encore la province de départ ici,
+    // l'attaquant n'entre dans lieu qu'en cas de percée — l'axe sert au rendu
+    xa: etat.prov[att.prov].cx, ya: etat.prov[att.prov].cy,
     campAtt: att.camp, perce,
     perteAtt, perteDef, t: 0,
   });

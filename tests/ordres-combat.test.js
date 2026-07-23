@@ -56,6 +56,9 @@ test("combat : la supériorité nette perce et fait décrocher le défenseur", (
   assert.equal(etat.prov[3].proprio, BLEU);
   assert.equal(def.prov, 4, "le défenseur décroche vers l'arrière ami");
   assert.equal(etat.batailles.length, 1);
+  // l'axe d'assaut part de la province d'origine de l'attaquant, pas du lieu
+  assert.equal(etat.batailles[0].xa, etat.prov[2].cx);
+  assert.equal(etat.batailles[0].ya, etat.prov[2].cy);
   assert.ok(att.force < 30000 && def.force < 5000, "les deux camps subissent des pertes");
 });
 

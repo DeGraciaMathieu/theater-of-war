@@ -384,32 +384,68 @@ function dessinerLegende(w, h){
 }
 const coutMarche = t => Math.max(1, Math.round(TERRAINS[t].cout));
 
-// Marqueurs de combat : là où le sang a coulé ce jour-là. Un halo bref sur la
-// province, et un cartouche opaque au-dessus qui porte le bilan des deux camps.
+// Marqueurs de combat : là où le sang a coulé ce jour-là. L'assaut arrive de
+// sa province d'origine, l'impact jette des éclats, puis le cartouche de
+// pertes reste lisible presque toute la durée avant de s'effacer.
 function dessinerBatailles(sx, sy){
   for (const b of etat.batailles){
     const X = b.x*sx, Y = b.y*sy;
     const k = 1 - b.t;                       // 1 au déclenchement → 0 à la fin
     ctx.save();
 
-    // halo court et net sur le lieu du combat
+    // trait d'assaut : la pointe file de l'origine au contact puis s'estompe
+    const XA = b.xa*sx, YA = b.ya*sy;
+    if (Math.hypot(X-XA, Y-YA) > 4 && b.t < 0.55){
+      const av = Math.min(1, b.t*4);
+      const ca = b.campAtt === ROUGE ? "255,120,104" : "132,180,232";
+      ctx.strokeStyle = `rgba(${ca},${0.9*(1 - b.t/0.55)})`;
+      ctx.lineWidth = 2.5;
+      ctx.setLineDash([7,5]);
+      ctx.beginPath();
+      ctx.moveTo(XA, YA);
+      ctx.lineTo(XA + (X-XA)*av, YA + (Y-YA)*av);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // halo vif à l'impact, éteint bien avant la fin du cartouche
+    const halo = Math.max(0, 1 - b.t*1.4);
     const R = 14 + b.t*10;
     const grad = ctx.createRadialGradient(X, Y, 1, X, Y, R);
     const teinte = b.perce ? "224,165,60" : "208,80,63";
-    grad.addColorStop(0, `rgba(${teinte},${0.6*k})`);
+    grad.addColorStop(0, `rgba(${teinte},${0.6*halo})`);
     grad.addColorStop(1, `rgba(${teinte},0)`);
     ctx.fillStyle = grad;
     ctx.beginPath(); ctx.arc(X, Y, R, 0, 7); ctx.fill();
 
-    // pastille d'épées croisées, marque le point de contact
+    // éclats radiaux pendant l'engagement
+    if (b.t > 0.06 && b.t < 0.5){
+      const e = (b.t - 0.06) / 0.44;
+      ctx.strokeStyle = `rgba(255,235,200,${0.85*(1-e)})`;
+      ctx.lineWidth = 1.5;
+      for (let j = 0; j < 6; j++){
+        const a = j*1.047 + (b.prov % 7)*0.4;
+        const r0 = 9 + e*14, r1 = r0 + 5 + 4*(1-e);
+        ctx.beginPath();
+        ctx.moveTo(X + Math.cos(a)*r0, Y + Math.sin(a)*r0);
+        ctx.lineTo(X + Math.cos(a)*r1, Y + Math.sin(a)*r1);
+        ctx.stroke();
+      }
+    }
+
+    // pastille d'épées croisées — les lames tremblent tant qu'on se bat
     ctx.fillStyle = `rgba(14,16,14,${0.55 + 0.35*k})`;
     ctx.beginPath(); ctx.arc(X, Y, 8, 0, 7); ctx.fill();
     ctx.strokeStyle = `rgba(255,240,224,${0.6 + 0.4*k})`;
     ctx.lineWidth = 2; const s = 4.5;
+    ctx.save();
+    ctx.translate(X, Y);
+    if (b.t < 0.5) ctx.rotate(Math.sin(b.t*44) * 0.18);
     ctx.beginPath();
-    ctx.moveTo(X-s, Y-s); ctx.lineTo(X+s, Y+s);
-    ctx.moveTo(X+s, Y-s); ctx.lineTo(X-s, Y+s);
+    ctx.moveTo(-s, -s); ctx.lineTo(s, s);
+    ctx.moveTo(s, -s); ctx.lineTo(-s, s);
     ctx.stroke();
+    ctx.restore();
 
     if (b.perteAtt + b.perteDef <= 0){ ctx.restore(); continue; }
 
@@ -427,7 +463,7 @@ function dessinerBatailles(sx, sy){
     // clamp horizontal dans le canvas
     cx = Math.max(4, Math.min(cx, cv.clientWidth - cw - 4));
 
-    ctx.globalAlpha = Math.min(1, k*1.6);    // reste opaque plus longtemps, s'efface vite en fin
+    ctx.globalAlpha = Math.min(1, k*4);      // opaque presque toute la durée, fondu sur le dernier quart
     // tige reliant le cartouche au lieu
     ctx.strokeStyle = `rgba(${teinte},.9)`; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.moveTo(X, Y-8); ctx.lineTo(cx+cw/2, cy+ch); ctx.stroke();

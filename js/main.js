@@ -5,14 +5,14 @@ import { tour } from "./tour.js";
 import { dessiner } from "./rendu.js";
 
 const DUREE_ANIM = 480;             // ms d'un jour animé
+const DUREE_BATAILLE = 2400;        // ms d'une bataille affichée : le temps de lire les pertes
 
 function boucle(t){
   const dt = t - etat.dernier; etat.dernier = t;
   const prov = etat.prov;
 
-  // marqueurs de combat : progressent sur ~900 ms puis s'effacent
   if (etat.batailles.length){
-    for (const b of etat.batailles) b.t = Math.min(1, b.t + dt/900);
+    for (const b of etat.batailles) b.t = Math.min(1, b.t + dt/DUREE_BATAILLE);
     if (etat.batailles.every(b => b.t >= 1) && etat.anim === 0) etat.batailles = [];
   }
 
