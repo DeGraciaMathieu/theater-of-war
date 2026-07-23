@@ -7,8 +7,8 @@ if printf '%s' "$input" | grep -Eq '"stop_hook_active" *: *true'; then
 fi
 cd "${CLAUDE_PROJECT_DIR:-.}" || exit 0
 log=$(mktemp)
-if ! node --test tests/ >"$log" 2>&1; then
-  echo "node --test tests/ échoue — corrige les tests avant de terminer la tâche :" >&2
+if ! node --test "tests/*.test.js" >"$log" 2>&1; then
+  echo "npm test échoue — corrige les tests avant de terminer la tâche :" >&2
   tail -20 "$log" >&2
   rm -f "$log"
   exit 2   # code 2 : bloque le Stop et renvoie stderr au modèle

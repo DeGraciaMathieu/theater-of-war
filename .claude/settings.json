@@ -7,7 +7,7 @@
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR/scripts/run-tests.sh\"",
             "timeout": 120,
-            "statusMessage": "Tests (node --test tests/)…"
+            "statusMessage": "Tests (node --test \"tests/*.test.js\")…"
           }
         ]
       }
