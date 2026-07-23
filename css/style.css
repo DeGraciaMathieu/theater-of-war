@@ -85,6 +85,8 @@ button.primaire:hover{background:#f0b654;color:var(--encre)}
 .accueil-boite p{color:var(--os-faible);letter-spacing:.08em}
 .accueil-choix{display:flex;gap:14px;justify-content:center;align-items:stretch;flex-wrap:wrap}
 .accueil-choix button{padding:14px 22px;font-size:15px}
+.accueil-regles{color:var(--os-faible);letter-spacing:.12em;text-transform:uppercase;font-size:13px}
+.accueil-regles:hover{color:var(--ambre)}
 .accueil-choix small{display:block;font-weight:500;font-size:12px;letter-spacing:.05em;
   text-transform:none;opacity:.75;margin-top:5px}
 

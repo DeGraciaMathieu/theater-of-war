@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>THÉÂTRE - règles du jeu</title>
+<link rel="icon" href="data:,">
+<style>
+/* Page documentaire autonome : tout le style vit ici, aucune dépendance au
+   rendu du jeu. Les chiffres du texte sont injectés depuis js/config.js par
+   le module en bas de page - la page ne peut pas mentir sur les valeurs. */
+:root{
+  --fond:#14130b;
+  --sable:#e6dcc2;
+  --sable-faible:#9a927a;
+  --dore:#e8b95a;
+  --trait:#3a3626;
+  --rouge:#ff8a7e;
+  --bleu:#9cc4e8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--fond);color:var(--sable);
+  font-family:"Courier New",Courier,monospace;
+  font-size:15px;line-height:1.6;
+}
+.barre{
+  display:flex;align-items:baseline;gap:14px;
+  padding:10px 16px;border-bottom:1px solid var(--trait);background:#191710;
+}
+.titre{font-weight:700;letter-spacing:.22em;text-transform:uppercase;font-size:16px}
+.barre a{margin-left:auto;color:var(--dore);text-decoration:none;letter-spacing:.1em}
+.barre a:hover{text-decoration:underline}
+main{max-width:860px;margin:0 auto;padding:28px 18px 60px}
+h1{font-size:26px;letter-spacing:.14em;text-transform:uppercase;color:var(--dore);margin-bottom:6px}
+.sous{color:var(--sable-faible);margin-bottom:26px}
+h2{font-size:18px;letter-spacing:.1em;text-transform:uppercase;color:var(--dore);
+   margin:34px 0 10px;padding-top:12px;border-top:1px solid var(--trait)}
+p{margin-bottom:10px}
+b{color:#f4eeda;font-weight:700}
+em{color:var(--dore);font-style:normal}
+code{font-size:14px;color:#f4eeda;background:#201d12;padding:1px 5px;border:1px solid var(--trait)}
+a{color:var(--dore)}
+ul{margin:0 0 10px 22px}
+li{margin-bottom:4px}
+.rouge{color:var(--rouge);font-weight:700}
+.bleu{color:var(--bleu);font-weight:700}
+nav.toc{
+  columns:2;gap:24px;margin:0 0 8px;
+  border:1px solid var(--trait);background:#191710;padding:14px 18px;
+}
+nav.toc a{display:block;text-decoration:none;color:var(--sable);padding:2px 0}
+nav.toc a:hover{color:var(--dore)}
+nav.toc .num{color:var(--dore);margin-right:8px}
+.note{border:1px solid var(--dore);background:#1d1808;padding:10px 14px;margin:14px 0}
+.note h4{color:var(--dore);letter-spacing:.14em;text-transform:uppercase;font-size:12px;margin-bottom:4px}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px}
+th{color:var(--sable-faible);letter-spacing:.12em;text-transform:uppercase;font-size:11px;
+   text-align:left;padding:6px 10px;border-bottom:1px solid var(--trait)}
+td{padding:6px 10px;border-bottom:1px solid #262215}
+#t-crt th,#t-crt td{text-align:center}
+#t-crt td:first-child,#t-crt th:first-child{text-align:left}
+.legende{color:var(--sable-faible);font-size:13px;margin-top:-4px}
+.pastille{display:inline-block;width:13px;height:13px;border:1px solid #14130b;
+          outline:1px solid var(--trait);margin-right:8px;vertical-align:-2px}
+.cta{
+  display:inline-block;margin-top:26px;padding:12px 22px;
+  background:var(--dore);color:var(--fond);text-decoration:none;
+  font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+}
+.cta:hover{background:#f2c76e}
+@media (max-width:600px){nav.toc{columns:1}}
+</style>
+</head>
+<body>
+
+<div class="barre">
+  <span class="titre">Théâtre</span>
+  <span style="font-size:13px;letter-spacing:.14em;color:var(--sable-faible)">RÈGLES DU JEU</span>
+  <a href="index.html">◂ Retour à l'accueil</a>
+</div>
+
+<main>
+<h1>Règles du jeu</h1>
+<p class="sous">Un wargame opérationnel où le ravitaillement décide de tout.</p>
+
+<nav class="toc">
+  <a href="#s1"><span class="num">1</span>Vue d'ensemble</a>
+  <a href="#s2"><span class="num">2</span>La carte et le terrain</a>
+  <a href="#s3"><span class="num">3</span>Les unités</a>
+  <a href="#s4"><span class="num">4</span>Les facteurs effectifs</a>
+  <a href="#s5"><span class="num">5</span>La séquence de jeu</a>
+  <a href="#s6"><span class="num">6</span>Le mouvement</a>
+  <a href="#s7"><span class="num">7</span>L'interdiction</a>
+  <a href="#s8"><span class="num">8</span>Le ravitaillement</a>
+  <a href="#s9"><span class="num">9</span>Le combat</a>
+  <a href="#s10"><span class="num">10</span>Recul et avance</a>
+  <a href="#s11"><span class="num">11</span>La victoire</a>
+</nav>
+
+<h2 id="s1">1. Vue d'ensemble</h2>
+<p>Vous commandez l'<b class="bleu">Alliance</b> (bleu) contre la <b class="rouge">Fédération</b> (rouge), tenue par l'ordinateur. La partie se joue sur une carte de <b id="p-prov">…</b> <em>provinces</em> ; chaque camp part avec trois <em>dépôts</em> de ravitaillement, un <em>QG</em> et <b id="p-corps">…</b> corps d'armée. La partie est gagnée quand les dépôts adverses sont tous pris (voir §11).</p>
+<div class="note">
+  <h4>L'idée maîtresse</h4>
+  <p>Ce n'est pas un jeu de destruction, c'est un jeu de flux. Un corps privé de son arrière fond sur pied et finit par capituler sans qu'on le charge (voir §8 et §11). Couper vaut toujours mieux que percer de front.</p>
+</div>
+
+<h2 id="s2">2. La carte et le terrain</h2>
+<p>La carte est un pavage de provinces généré à chaque partie. Deux provinces qui partagent une frontière sont <em>voisines</em> : tout dans le jeu - marche, combat, ravitaillement - circule de voisine en voisine. Chaque province porte un <b>terrain</b> qui fixe trois choses : le temps de marche pour y entrer (voir §6), le décalage défensif de celui qui s'y tient (voir §9), et le <em>débit</em> logistique qu'elle laisse passer (voir §8).</p>
+<table>
+  <thead><tr><th>Terrain</th><th>Marche</th><th>Défense</th><th>Débit</th><th>Rôle</th></tr></thead>
+  <tbody id="t-terrains"></tbody>
+</table>
+<p>Certaines provinces sont des <em>nœuds routiers</em> : des carrefours qui fluidifient le transit (coût logistique presque divisé par deux, débit plus que doublé). Sur la carte, ils portent le terrain urbain - les provinces quadrillées.</p>
+
+<h2 id="s3">3. Les unités</h2>
+<p>Le <em>corps d'armée</em> est l'unique pion du jeu. Il porte deux valeurs : sa <b>force</b> (en hommes) et son <b>moral</b> (0 à 100), lisibles dans la fiche en bas de l'écran quand le corps est sélectionné, avec son état de ravitaillement. Chaque camp reçoit la même armée de départ :</p>
+<table>
+  <thead><tr><th>Rôle</th><th>Nombre</th><th>Force initiale</th><th>Moral initial</th><th>Profil</th></tr></thead>
+  <tbody id="t-unites"></tbody>
+</table>
+<p>Les corps de front tiennent la ligne de contact dès le premier jour ; la réserve attend sur le dépôt d'arrière - c'est votre masse de manœuvre, gardez-la pour l'exploitation ou le colmatage.</p>
+
+<h2 id="s4">4. Les facteurs effectifs</h2>
+<p>La force imprimée ne dit pas ce que vaut un corps. Sa <b>puissance effective</b> combine trois facteurs : la <b>force</b> fait les pertes, le <b>moral</b> la multiplie, et l'état de <b>ravitaillement</b> la module - un corps affamé ne se bat qu'à une fraction de son papier (voir §9).</p>
+<p>Ces facteurs vivent : chaque jour, le moral <b>dérive vers un palier fixé par la logistique</b>. Bien ravitaillé, un corps remonte haut et reçoit des <em>renforts</em> ; mal ravitaillé, il glisse ; coupé de l'arrière, son moral plonge vers zéro pendant que sa force s'érode. C'est l'<em>attrition</em> : elle ne tue jamais un corps nourri, elle éteint un corps coupé (voir §11).</p>
+
+<h2 id="s5">5. La séquence de jeu</h2>
+<p>Le temps s'écoule en <em>jours</em>. Chaque journée se déroule dans un ordre fixe : recalcul du ravitaillement, ordres de l'ennemi, transmission des ordres en attente (voir §6), marches et combats, attrition, puis nouveau recalcul du ravitaillement.</p>
+<p><b>« Jour suivant »</b> joue une journée. <b>« Événement suivant »</b> enchaîne les jours (au plus <b id="p-avance">…</b> d'un coup) et s'arrête dès qu'une décision vous attend : combat engagé, corps à destination, poche formée, corps perdu, axe saturé. <b>« Lecture auto »</b> déroule en continu. Les vues <b>« Ravitaillement »</b> et <b>« Camps »</b> changent la lecture de la carte : niveaux de supply et axe du corps sélectionné pour l'une, terrain nu pour l'autre.</p>
+
+<h2 id="s6">6. Le mouvement</h2>
+<p>On donne un ordre en touchant un corps bleu puis une province de destination ; l'itinéraire et son délai s'affichent. Re-toucher la case du corps annule l'ordre.</p>
+<p>Un ordre ne part pas sur-le-champ : il subit une <em>latence de transmission</em>, le temps que l'état-major le fasse parvenir au corps. Elle croît avec la distance au <em>QG</em> et s'allonge si le corps est mal ravitaillé. Le corps suit ensuite sa route de province en province : entrer dans une province coûte le temps de marche de son terrain (colonne « Marche » du §2). L'itinéraire préfère les provinces amies ; si le front bouge sous ses pieds, le corps recalcule sa route seul. Entrer dans une province ennemie vide la <b>conquiert</b> ; entrer dans une province défendue déclenche un <b>combat</b> (voir §9).</p>
+
+<h2 id="s7">7. L'interdiction</h2>
+<p>Un corps projette une <em>zone d'interdiction</em> sur la province qu'il occupe - l'équivalent des <em>ZOC</em> (zones de contrôle) des wargames classiques, ramené à une règle unique : <b>la présence d'un corps ennemi sur une province la ferme au ravitaillement adverse</b>, même si la province vous appartient (voir §8). Un dépôt occupé par l'ennemi cesse de fournir.</p>
+<div class="note">
+  <h4>Verrouiller un passage</h4>
+  <p>Un seul corps posé sur la bonne province - un pont, un défilé entre deux lacs, l'unique axe d'un saillant - prive tout ce qui est derrière de son arrière, sans livrer combat. C'est l'arme la plus rentable du jeu.</p>
+</div>
+
+<h2 id="s8">8. Le ravitaillement</h2>
+<p>Chaque jour, le ravitaillement coule des <em>dépôts</em> vers les corps, de proche en proche, à travers un <b>corridor</b> de provinces amies libres d'ennemis (voir §7). Chaque terrain traversé a un coût ; au-delà d'un budget de <b id="p-portee">…</b> points depuis le dépôt, le supply tombe à zéro. Les nœuds routiers allongent la portée réelle en réduisant le coût. Survoler un dépôt montre sa zone d'action.</p>
+<p>Le corridor a aussi une capacité : chaque province laisse passer un <em>débit</em> limité (colonne « Débit » du §2), amélioré en ville et triplé sur les dépôts. Quand trop de corps tirent sur le même axe, le maillon le plus étroit - le <em>goulot</em> - <b>sature</b> et rogne tout ce qui passe derrière lui : c'est la <em>congestion</em>, signalée par l'alerte « axe saturé ».</p>
+<p>Une province amie sans corridor est <b>coupée de l'arrière</b> : supply zéro, quelle que soit la distance. Un groupe de provinces coupées qui contient des corps forme une <em>poche</em>, signalée sur la carte. La coupure est souvent mutuelle : le front imbriqué qui isole votre corps isole peut-être aussi celui d'en face.</p>
+
+<h2 id="s9">9. Le combat</h2>
+<p>Quand un corps entre dans une province défendue, la <b>puissance effective</b> de chaque camp est évaluée (voir §4) et le défenseur multiplie la sienne par la <b>défense de son terrain</b>. Si la part de l'attaquant dans la puissance totale dépasse le <em>seuil de percée</em> (<code id="p-seuil">…</code>), il <b class="bleu">perce</b> ; sinon il est <b class="rouge">repoussé</b>. Dans les deux cas, les deux camps prennent des pertes, en hommes et en moral. La table ci-dessous donne l'issue par rapport de forces, à moral et ravitaillement égaux :</p>
+<table id="t-crt">
+  <thead id="t-crt-tete"></thead>
+  <tbody id="t-crt-corps"></tbody>
+</table>
+<p class="legende" id="t-crt-legende"></p>
+
+<h2 id="s10">10. Recul et avance</h2>
+<p>Après une <b class="bleu">percée</b>, les défenseurs <em>décrochent</em> vers une province amie ravitaillée, en y laissant du moral ; s'ils n'ont aucune ligne de repli, ils sont <b>anéantis</b>. L'attaquant <b>avance</b> dans la province conquise. Après un <b class="rouge">repoussé</b>, l'attaquant reste sur place et son ordre tombe.</p>
+<p>Un corps laminé par les pertes tente de lui-même de décrocher vers l'arrière ravitaillé ; acculé, il se dissout.</p>
+<div class="note">
+  <h4>Reculer, c'est mourir un peu</h4>
+  <p>Chaque décrochage coûte du moral, et un corps exsangue qui décroche encore finit par se dissoudre. Mais tenir sans arrière est pire : mieux vaut céder une province que laisser un corps s'éteindre dans une poche.</p>
+</div>
+
+<h2 id="s11">11. La victoire</h2>
+<p>La partie se termine quand un camp <b>perd ses trois dépôts</b> - ou n'a plus un seul corps sur la carte. Prendre un dépôt ennemi rapporte donc deux fois : c'est un tiers de la victoire, et tout ce qu'il ravitaillait s'éteint. À l'inverse, un corps coupé dont le moral s'est effondré <b>capitule</b> sans combat (voir §4) : l'encerclement est une arme de destruction massive à retardement.</p>
+<div class="note">
+  <h4>Le temps joue contre l'assiégé</h4>
+  <p>Une poche ne se réduit pas d'assaut : elle se garde. Contenez-la, laissez l'attrition faire son œuvre, et portez l'effort ailleurs pendant que l'adversaire s'épuise à la rouvrir.</p>
+</div>
+
+<a class="cta" href="index.html">Composer mon armée ▸</a>
+</main>
+
+<script type="module">
+// Les chiffres de la page viennent du jeu lui-même : si une valeur change
+// dans js/config.js, la page suit sans retouche.
+import { TERRAINS, NB_PROV, PORTEE, AVANCE_MAX, SEUIL_PERCEE, ARMEE, ODDS } from "./js/config.js";
+
+const fmt = n => n.toLocaleString("fr-FR");
+document.getElementById("p-prov").textContent = NB_PROV;
+document.getElementById("p-portee").textContent = PORTEE;
+document.getElementById("p-avance").textContent = AVANCE_MAX;
+document.getElementById("p-corps").textContent = ARMEE.front + ARMEE.reserve;
+document.getElementById("p-seuil").textContent = Math.round(SEUIL_PERCEE * 100) + " %";
+
+// même arrondi que la légende et la fiche du jeu
+const marche = t => Math.max(1, Math.round(t.cout));
+
+// rôle déduit des valeurs, pas rédigé : il suit l'équilibrage
+function roleOf(t){
+  if (t.debit >= 5) return "axe logistique majeur";
+  if (t.def >= 1.7) return "bastion défensif";
+  if (t.def >= 1.4) return "couvert défensif";
+  if (t.cout >= 2.5) return "obstacle, lent et pauvre en débit";
+  return "terrain de manœuvre";
+}
+
+document.getElementById("t-terrains").innerHTML = TERRAINS.map(t => `
+  <tr>
+    <td><i class="pastille" style="background:rgb(${t.col.join(",")})"></i>${t.nom}</td>
+    <td>${marche(t)} j</td>
+    <td>×${t.def.toFixed(2)}</td>
+    <td>${t.debit.toFixed(1)}</td>
+    <td>${roleOf(t)}</td>
+  </tr>`).join("");
+
+// tableau des unités : composition initiale d'un camp, profils rédigés à la main
+const PROFILS = {
+  front: "tient la ligne de contact dès le premier jour",
+  reserve: "masse de manœuvre, attend sur le dépôt d'arrière",
+};
+document.getElementById("t-unites").innerHTML = `
+  <tr><td>corps de front</td><td>${ARMEE.front}</td>
+      <td>${fmt(ARMEE.forceFront[0])} à ${fmt(ARMEE.forceFront[1])} h</td>
+      <td>${ARMEE.moral[0]} à ${ARMEE.moral[1]}</td><td>${PROFILS.front}</td></tr>
+  <tr><td>réserve</td><td>${ARMEE.reserve}</td>
+      <td>${fmt(ARMEE.forceReserve[0])} à ${fmt(ARMEE.forceReserve[1])} h</td>
+      <td>${ARMEE.moral[0]} à ${ARMEE.moral[1]}</td><td>${PROFILS.reserve}</td></tr>`;
+
+// table de résolution : issue par rapport de forces (ODDS) et par terrain,
+// calculée depuis le seuil de percée et la défense des terrains - jamais rédigée
+const seuilRapport = t => SEUIL_PERCEE / (1 - SEUIL_PERCEE) * t.def;
+document.getElementById("t-crt-tete").innerHTML =
+  "<tr><th>Rapport</th>" + TERRAINS.map(t => `<th>${t.nom}</th>`).join("") + "</tr>";
+document.getElementById("t-crt-corps").innerHTML = ODDS.map(([a,d]) => `
+  <tr><td>${a}:${d}</td>${TERRAINS.map(t =>
+    a/d > seuilRapport(t)
+      ? '<td class="bleu">P</td>'
+      : '<td class="rouge">R</td>').join("")}
+  </tr>`).join("");
+document.getElementById("t-crt-legende").innerHTML =
+  '<b class="bleu">P</b> : percée, le défenseur décroche (voir §10) · '
+  + '<b class="rouge">R</b> : repoussé, l\'attaquant reste sur place · '
+  + 'rapport de forces attaquant:défenseur, à moral et ravitaillement égaux.';
+</script>
+</body>
+</html>

@@ -6,6 +6,7 @@ Wargame de logistique en navigateur : le joueur (Alliance, bleu) commande des co
 
 - **Vanilla JS (modules ES natifs), HTML, CSS.** Aucune dépendance, aucun build, aucun framework. Le `package.json` ne sert qu'à marquer `"type": "module"` pour Node — ne jamais y ajouter de dépendance sans discussion préalable.
 - **Dev** : servir la racine en HTTP (`python3 -m http.server`), ouvrir `index.html`. Pas de rechargement à chaud.
+- **`regles.html`** : page des règles, autonome (CSS inliné, aucune dépendance au rendu). La prose des mécanismes est rédigée à la main ; tout chiffre vient de `js/config.js` via le module en bas de page — ne jamais y écrire une valeur en dur.
 - **Test** : `node --test "tests/*.test.js"` (ou `npm test`) — glob obligatoire, les Node récents n'acceptent plus un dossier en argument. Stub DOM dans `tests/stub-dom.js`.
 - **Lint/format** : aucun outil. Les conventions ci-dessous font foi.
 - **Prod** : Vercel, site statique. `vercel.json` fournit les proxys Overpass `/api/overpass` et `/api/overpass-kumi` (contournement CORS).
