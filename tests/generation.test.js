@@ -2,7 +2,7 @@ import "./stub-dom.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { etat } from "../js/etat.js";
-import { NB_PROV, ROUGE, BLEU, RW, RH } from "../js/config.js";
+import { NB_PROV, ROUGE, BLEU, RW, RH, TERRAINS } from "../js/config.js";
 import { genererCarte } from "../js/carte.js";
 
 test("genererCarte produit un théâtre jouable", () => {
@@ -34,4 +34,14 @@ test("genererCarte produit un théâtre jouable", () => {
 
   // le supply initial est calculé : les alentours des dépôts sont ravitaillés
   assert.ok(etat.prov.some(p => p.supply > 0));
+});
+
+test("la carte procédurale contient du bois, sans en être couverte", () => {
+  genererCarte();
+  const BOIS = TERRAINS.findIndex(t => t.nom === "bois");
+  const bois = etat.prov.filter(p => p.terrain === BOIS).length;
+  assert.ok(bois > 0, "aucune province de bois");
+  // le bois ne remplace que les terres basses du haut du champ de végétation :
+  // il ne peut pas dépasser le quantile qui le définit
+  assert.ok(bois <= NB_PROV * 0.25, `carte couverte de bois : ${bois} provinces`);
 });

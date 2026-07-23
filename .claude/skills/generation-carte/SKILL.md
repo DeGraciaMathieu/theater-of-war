@@ -13,12 +13,12 @@ Deux origines, un seul format de sortie : des provinces dans `etat.prov` + un ra
 | Concept | Implémentation |
 |---|---|
 | Province | Objet créé par `creerProvince(id, x, y, terrain, ville)` — `js/carte.js` |
-| Terrain | Index dans `TERRAINS` (`js/config.js`) : 0 plaine, 1 bocage, 2 collines, 3 montagne, 4 marais (procédural) ; 5 bois, 6 berges, 7 urbain (Angers) |
+| Terrain | Index dans `TERRAINS` (`js/config.js`) : 0 plaine, 1 bocage, 2 collines, 3 montagne, 4 marais (procédural) ; 5 bois (procédural + Angers) ; 6 berges, 7 urbain (Angers) |
 | Découpage en provinces | `rasteriserVoronoi(eauMask)` — Voronoï par buckets + centroïdes + adjacence, `js/carte.js` |
 | Adjacence | `p.voisins` (symétrique), construite pixel par pixel ; jamais à travers l'eau |
 | Eau | `eauMask` (Uint8Array) construit dans `angers.js` : polygones `natural=water` remplis (`remplirPolygone`) + rivières épaissies (`traceLarge`) |
 | Pont | `relierPonts(routes)` (`js/angers.js`) : une route qui franchit l'eau ajoute l'adjacence entre les deux rives |
-| Relief procédural | Bruit à bosses + seuils par quantiles dans `genererCarte` (`js/carte.js`) |
+| Relief procédural | Bruit à bosses + seuils par quantiles dans `genererCarte` (`js/carte.js`) ; un second champ de bosses (végétation) boise le haut de son quantile parmi plaine/bocage |
 | Terrain OSM | `terrainDepuisLanduse` (`js/angers.js`) : forest/wood→bois, residential/industrial/commercial→urbain, farmland→plaine, meadow→bocage ; proximité d'eau→berges |
 | Nœud routier (`ville`) | Procédural : `alea() < 0.13` ; Angers : province à < 16 px d'une route de rang ≥ 3 |
 | Camps, dépôts, QG, corps initiaux | `installerTheatre` + `poserBase` (`js/carte.js`) : partage NE/SO, 2 dépôts d'arrière + 1 dépôt avancé (à `AVANCE_DEPOT` du chemin coin → centre) + 1 QG + 8 corps par camp |

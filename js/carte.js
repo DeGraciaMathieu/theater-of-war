@@ -20,25 +20,34 @@ export function genererCarte(){
     sites.push(best);
   }
 
-  // bruit de valeur pour le relief : beaucoup de bosses courtes et marquées,
-  // sinon tout se moyenne vers la plaine
-  const bosses = [];
-  for (let i = 0; i < 26; i++)
-    bosses.push({ x: alea()*RW, y: alea()*RH,
-                  r: (28 + alea()*70)*(RW/420), a: (alea()*2-1)*1.5 });
-
-  const hauteurs = sites.map(s => {
-    let h = 0;
-    for (const b of bosses){
-      const d = Math.hypot(s.x-b.x, s.y-b.y);
-      if (d < b.r) h += b.a * (1 - d/b.r);
-    }
-    return h;
-  });
+  // bruit de valeur : beaucoup de bosses courtes et marquées, sinon tout se
+  // moyenne vers la plaine
+  const champBosses = () => {
+    const bosses = [];
+    for (let i = 0; i < 26; i++)
+      bosses.push({ x: alea()*RW, y: alea()*RH,
+                    r: (28 + alea()*70)*(RW/420), a: (alea()*2-1)*1.5 });
+    return sites.map(s => {
+      let h = 0;
+      for (const b of bosses){
+        const d = Math.hypot(s.x-b.x, s.y-b.y);
+        if (d < b.r) h += b.a * (1 - d/b.r);
+      }
+      return h;
+    });
+  };
+  const hauteurs = champBosses();
+  // second champ indépendant du relief : le bois est un couvert des terres
+  // basses (plaine/bocage), pas une altitude de plus
+  const vegetation = champBosses();
   // seuils par quantiles → répartition à peu près maîtrisée quelle que soit la carte
-  const tri = [...hauteurs].sort((a,b) => a-b);
-  const q = f => tri[Math.floor(f * (tri.length-1))];
-  const sMarais = q(0.15), sBocage = q(0.35), sColl = q(0.72), sMont = q(0.9);
+  const q = (vals, f) => {
+    const tri = [...vals].sort((a,b) => a-b);
+    return tri[Math.floor(f * (tri.length-1))];
+  };
+  const sMarais = q(hauteurs, 0.15), sBocage = q(hauteurs, 0.35),
+        sColl = q(hauteurs, 0.72), sMont = q(hauteurs, 0.9);
+  const sBois = q(vegetation, 0.8);
 
   sites.forEach((s, i) => {
     const h = hauteurs[i];
@@ -47,6 +56,7 @@ export function genererCarte(){
     else if (h >= sColl) t = 2;                  // collines
     else if (h <= sMarais) t = 4;                // marais (creux)
     else if (h <= sBocage) t = 1;                // bocage
+    if (t <= 1 && vegetation[i] >= sBois) t = 5; // bois (futaies des terres basses)
     prov.push(creerProvince(i, s.x, s.y, t, alea() < 0.13));
   });
 

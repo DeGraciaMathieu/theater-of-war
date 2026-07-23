@@ -6,7 +6,7 @@ export const AVANCE_MAX = 30;             // plafond de l'avance rapide : jamais
 export const ROUGE = 1, BLEU = 2;
 
 // « debit » = capacité de transit, en points de ravitaillement (1 pt ≈ 12 000 hommes)
-// 0-4 : terrains de la carte procédurale · 5-7 : terrains de la carte d'Angers (OSM)
+// 0-4 : terrains de la carte procédurale · 5 : bois (les deux cartes) · 6-7 : carte d'Angers (OSM)
 export const TERRAINS = [
   { nom:"plaine",   cout:1.0, def:1.00, debit:5.0, col:[122,132, 84] },
   { nom:"bocage",   cout:1.6, def:1.25, debit:3.6, col:[ 74,104, 58] },
