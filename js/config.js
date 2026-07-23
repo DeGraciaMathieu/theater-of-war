@@ -4,6 +4,15 @@ export const PORTEE = 15;                 // budget de coût logistique depuis u
 export const AVANCE_DEPOT = 0.6;          // position du dépôt avancé : fraction du chemin coin → centre
 export const AVANCE_MAX = 30;             // plafond de l'avance rapide : jamais plus de jours d'un coup
 export const ROUGE = 1, BLEU = 2;
+export const SEUIL_PERCEE = 0.58;         // part de la puissance totale qu'il faut à l'assaillant pour percer
+export const ODDS = [[1,1],[3,2],[2,1],[5,2],[3,1]]; // rapports de forces de la table de résolution (regles.html)
+
+// composition initiale d'un camp : des corps déployés au front + une réserve sur dépôt
+export const ARMEE = {
+  front: 7,  forceFront: [11000, 24000],
+  reserve: 1, forceReserve: [14000, 20000],
+  moral: [88, 98],
+};
 
 // « debit » = capacité de transit, en points de ravitaillement (1 pt ≈ 12 000 hommes)
 // 0-4 : terrains de la carte procédurale · 5 bois et 7 urbain : les deux cartes · 6 berges : carte OSM

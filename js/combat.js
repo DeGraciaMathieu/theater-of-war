@@ -1,4 +1,4 @@
-import { TERRAINS, BLEU } from "./config.js";
+import { TERRAINS, BLEU, SEUIL_PERCEE } from "./config.js";
 import { etat, alea, ennemiSur, unitesDe, ravitaillement } from "./etat.js";
 import { journal } from "./hud.js";
 
@@ -21,7 +21,7 @@ export function combat(att, defs, lieu){
   const perteAtt = fAtt0 - att.force;
   const perteDef = fDef0 - defs.reduce((s,d) => s + d.force, 0);
 
-  const perce = ratio > 0.58;
+  const perce = ratio > SEUIL_PERCEE;
   etat.batailles.push({                // événement affiché pendant l'animation du jour
     prov: lieu.id, x: lieu.cx, y: lieu.cy,
     // origine de l'assaut : att.prov est encore la province de départ ici,

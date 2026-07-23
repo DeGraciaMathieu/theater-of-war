@@ -1,4 +1,4 @@
-import { RW, RH, NB_PROV, ROUGE, BLEU, AVANCE_DEPOT } from "./config.js";
+import { RW, RH, NB_PROV, ROUGE, BLEU, AVANCE_DEPOT, ARMEE } from "./config.js";
 import { etat, alea } from "./etat.js";
 import { calculerSupply } from "./logistique.js";
 import { journal, majCompteurs } from "./hud.js";
@@ -184,20 +184,22 @@ function poserBase(camp, x, y){
   avant.depot = true; depots.push(avant);
   tries[0].qg = true;
 
-  // 7 corps d'armée déployés vers le front
+  // les corps déployés vers le front, puis la réserve sur le dépôt d'arrière
+  const tirer = ([min, max]) => Math.round(min + alea()*(max - min));
   const front = prov.filter(p => p.proprio === camp &&
       p.voisins.some(v => prov[v].proprio !== camp));
   front.sort(() => alea() - 0.5);
-  for (let i = 0; i < 7 && i < front.length; i++){
-    creerUnite(camp, front[i].id, Math.round(11000 + alea()*13000));
+  for (let i = 0; i < ARMEE.front && i < front.length; i++){
+    creerUnite(camp, front[i].id, tirer(ARMEE.forceFront));
   }
-  creerUnite(camp, depots[0].id, Math.round(14000 + alea()*6000)); // réserve
+  for (let i = 0; i < ARMEE.reserve; i++)
+    creerUnite(camp, depots[0].id, tirer(ARMEE.forceReserve));
 }
 
 function creerUnite(camp, provId, force){
   etat.unites.push({
     id: etat.nextId++, camp, prov: provId,
-    force, moral: 88 + alea()*10, coupe: 0,
+    force, moral: ARMEE.moral[0] + alea()*(ARMEE.moral[1] - ARMEE.moral[0]), coupe: 0,
     ax: etat.prov[provId].cx, ay: etat.prov[provId].cy,   // position affichée (interpolée)
     nom: (camp === BLEU ? "C." : "K.") + (etat.nextId - 1),
   });
