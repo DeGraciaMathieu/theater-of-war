@@ -48,7 +48,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 .bloc{padding:10px 14px;border-right:1px solid var(--trait);min-width:0;
       min-height:0;overflow:hidden}
 .bloc h3{font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--os-faible);margin-bottom:8px;font-weight:500}
-/* trois groupes en colonnes : conduite / vues / cartes — l'action primaire ressort */
+/* trois groupes en colonnes : temps / calques / filtres — l'action primaire ressort */
 .cmd{display:flex;gap:12px}
 .grp{display:flex;flex-direction:column;gap:7px;padding-right:12px;border-right:1px solid #232823}
 .grp:last-child{border-right:none;padding-right:0}

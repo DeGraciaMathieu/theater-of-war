@@ -3,12 +3,9 @@ import { etat, unitesDe } from "./etat.js";
 import { cheminVers, estimerOrdre, donnerOrdre, annulerOrdre } from "./ordres.js";
 import { porteeDepuis } from "./logistique.js";
 import { ficheVide, ficheUnite, ficheProv } from "./hud.js";
-import { genererCarte } from "./carte.js";
 import { tour, avancerJusquEvenement } from "./tour.js";
 
 const cv = document.getElementById("cv");
-const elDate = document.getElementById("date");
-const elJournal = document.getElementById("journal");
 
 function provSous(ev){
   const r = cv.getBoundingClientRect();
@@ -83,10 +80,13 @@ bCamps.onclick = () => {
   etat.teinteCamps = !etat.teinteCamps; etat.sale = true;
   bCamps.setAttribute("aria-pressed", etat.teinteCamps);
 };
-document.getElementById("bReset").onclick = () => {
-  elJournal.innerHTML = ""; genererCarte();
-  etat.auto = false; bAuto.setAttribute("aria-pressed", false); bAuto.textContent = "Lecture auto";
-  ficheVide(); elDate.textContent = "JOUR 001";
+// filtres de terrain : exclusifs entre eux, re-cliquer le filtre actif l'éteint
+const boutonsFiltre = [...document.querySelectorAll("button.filtre")];
+for (const b of boutonsFiltre) b.onclick = () => {
+  const f = b.dataset.filtre;
+  etat.filtre = etat.filtre === f ? null : f;
+  etat.sale = true;
+  for (const x of boutonsFiltre) x.setAttribute("aria-pressed", etat.filtre === x.dataset.filtre);
 };
 // Accueil : la carte procédurale du démarrage est déjà prête derrière l'overlay
 const elAccueil = document.getElementById("accueil");
