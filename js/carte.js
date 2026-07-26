@@ -184,7 +184,7 @@ function poserBase(camp, x, y){
   avant.depot = true; depots.push(avant);
   tries[0].qg = true;
 
-  // les corps déployés vers le front, puis la réserve sur le dépôt d'arrière
+  // les corps déployés vers le front, puis la réserve à mi-profondeur
   const tirer = ([min, max]) => Math.round(min + alea()*(max - min));
   const front = prov.filter(p => p.proprio === camp &&
       p.voisins.some(v => prov[v].proprio !== camp));
@@ -192,8 +192,25 @@ function poserBase(camp, x, y){
   for (let i = 0; i < ARMEE.front && i < front.length; i++){
     creerUnite(camp, front[i].id, tirer(ARMEE.forceFront));
   }
-  for (let i = 0; i < ARMEE.reserve; i++)
-    creerUnite(camp, depots[0].id, tirer(ARMEE.forceReserve));
+
+  // réserve dispersée à mi-chemin base↔front plutôt qu'empilée sur l'arrière :
+  // masse de manœuvre déjà avancée, prête à colmater ou exploiter. On vise la
+  // médiane géométrique (distance à la base ≈ distance au front), puis on
+  // écarte les corps entre eux pour ne pas les regrouper.
+  const distFront = p => Math.min(...front.map(f => Math.hypot(f.x-p.x, f.y-p.y)));
+  const candidats = prov.filter(p => p.proprio === camp && !p.depot && !front.includes(p))
+    .sort((a,b) => Math.abs(Math.hypot(a.x-x,a.y-y) - distFront(a))
+                 - Math.abs(Math.hypot(b.x-x,b.y-y) - distFront(b)));
+  const reserve = [];
+  const espace = 44*(RW/420);
+  for (let pass = 0; pass < 2 && reserve.length < ARMEE.reserve; pass++)
+    for (const p of candidats){
+      if (reserve.length >= ARMEE.reserve) break;
+      if (reserve.includes(p)) continue;
+      if (pass === 0 && !reserve.every(r => Math.hypot(r.x-p.x, r.y-p.y) > espace)) continue;
+      reserve.push(p);
+    }
+  for (const p of reserve) creerUnite(camp, p.id, tirer(ARMEE.forceReserve));
 }
 
 function creerUnite(camp, provId, force){
