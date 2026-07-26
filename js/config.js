@@ -9,8 +9,8 @@ export const ODDS = [[1,1],[3,2],[2,1],[5,2],[3,1]]; // rapports de forces de la
 
 // composition initiale d'un camp : des corps déployés au front + une réserve sur dépôt
 export const ARMEE = {
-  front: 7,  forceFront: [11000, 24000],
-  reserve: 1, forceReserve: [14000, 20000],
+  front: 6,  forceFront: [11000, 24000],   // 2/3 des corps au contact
+  reserve: 3, forceReserve: [14000, 20000], // 1/3 en retrait sur le dépôt d'arrière
   moral: [88, 98],
 };
 

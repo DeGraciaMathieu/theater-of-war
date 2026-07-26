@@ -2,7 +2,7 @@ import "./stub-dom.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { etat } from "../js/etat.js";
-import { NB_PROV, ROUGE, BLEU, RW, RH, TERRAINS } from "../js/config.js";
+import { NB_PROV, ROUGE, BLEU, RW, RH, TERRAINS, ARMEE } from "../js/config.js";
 import { genererCarte } from "../js/carte.js";
 
 test("genererCarte produit un théâtre jouable", () => {
@@ -26,9 +26,9 @@ test("genererCarte produit un théâtre jouable", () => {
     assert.ok(auCentre < 240, `dépôt avancé attendu près du centre, plus proche à ${Math.round(auCentre)}px`);
   }
 
-  // 8 corps par camp (7 au front + 1 réserve), chacun sur une province amie
+  // corps par camp (front + réserve), chacun sur une province amie
   for (const camp of [ROUGE, BLEU])
-    assert.equal(etat.unites.filter(u => u.camp === camp).length, 8);
+    assert.equal(etat.unites.filter(u => u.camp === camp).length, ARMEE.front + ARMEE.reserve);
   for (const u of etat.unites)
     assert.equal(etat.prov[u.prov].proprio, u.camp);
 
