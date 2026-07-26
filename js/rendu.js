@@ -63,10 +63,35 @@ function distanceAuFront(){
 
 // Le fond ne dépend que de l'état du théâtre : on ne le recalcule qu'au
 // changement, pas à chaque frame. 504 000 pixels, ce serait cher pour rien.
+// Filtre de terrain : valeur normalisée 0→1 par terrain présent, où 1 = le plus
+// avantageux (forte défense, fort transit, faible coût de marche). Sert de
+// heatmap pour lire d'un coup les capacités des tuiles.
+function tableFiltre(filtre){
+  const cle = filtre === "defense" ? "def" : filtre === "transit" ? "debit" : "cout";
+  const presents = [...new Set(etat.prov.map(p => p.terrain))];
+  const vals = presents.map(t => TERRAINS[t][cle]);
+  const min = Math.min(...vals), max = Math.max(...vals);
+  const table = {};
+  for (const t of presents){
+    let n = max > min ? (TERRAINS[t][cle] - min) / (max - min) : 0.5;
+    if (filtre === "deplacement") n = 1 - n;   // coût de marche bas = mobilité forte
+    table[t] = n;
+  }
+  return table;
+}
+// Rampe faible→fort : rouge (0) → ambre (0.5) → vert (1), lisible sur fond sombre
+function rampeFiltre(v){
+  v = Math.max(0, Math.min(1, v));
+  return v < 0.5
+    ? [200 + 24*v/0.5, 70 + 105*v/0.5, 60 + 10*v/0.5]
+    : [224 - 104*(v-0.5)/0.5, 175 + 25*(v-0.5)/0.5, 70 + 40*(v-0.5)/0.5];
+}
+
 function construireFond(){
-  const { prov, siteIdx, survol, vueSupply, imgData } = etat;
+  const { prov, siteIdx, survol, vueSupply, filtre, imgData } = etat;
   const d = imgData.data;
   const dFront = distanceAuFront();
+  const heat = filtre ? tableFiltre(filtre) : null;
   for (let y = 0; y < RH; y++){
     for (let x = 0; x < RW; x++){
       const i = y*RW + x, s = siteIdx[i];
@@ -90,12 +115,20 @@ function construireFond(){
           r = r*0.58 + 66*0.42;  g = g*0.58 + 112*0.42; b = b*0.58 + 158*0.42;
         }
       }
-      // relief : les provinces mal ravitaillées s'assombrissent. La vue
-      // Ravitaillement garde ce même fond (terrain, camps, front) et se
-      // contente d'exagérer le contraste au lieu de tout repeindre.
-      const k = vueSupply ? (p.proprio ? 0.30 + 0.70*p.supply : 0.5)
-                          : 0.66 + 0.34*(p.proprio ? p.supply : 0.5);
-      r *= k; g *= k; b *= k;
+      // filtre de terrain : la couleur porte l'info (capacité de la tuile), on
+      // recouvre fortement le fond au lieu de le teinter — le motif appliqué
+      // ensuite garde la signature du terrain lisible
+      if (heat){
+        const [fr, fg, fb] = rampeFiltre(heat[p.terrain]);
+        r = r*0.28 + fr*0.72; g = g*0.28 + fg*0.72; b = b*0.28 + fb*0.72;
+      } else {
+        // relief : les provinces mal ravitaillées s'assombrissent. La vue
+        // Ravitaillement garde ce même fond (terrain, camps, front) et se
+        // contente d'exagérer le contraste au lieu de tout repeindre.
+        const k = vueSupply ? (p.proprio ? 0.30 + 0.70*p.supply : 0.5)
+                            : 0.66 + 0.34*(p.proprio ? p.supply : 0.5);
+        r *= k; g *= k; b *= k;
+      }
 
       // motif du terrain (trame façon carte d'état-major) appliqué APRÈS la
       // teinte de camp et le relief : à pleine amplitude, la signature du
@@ -103,7 +136,7 @@ function construireFond(){
       const mo = motifTerrain(p.terrain, x, y);
       r += mo; g += mo; b += mo;
 
-      if (vueSupply && p.proprio){
+      if (!heat && vueSupply && p.proprio){
         if (p.supply === 0){                        // relié ou non : rien n'arrive
           r = r*0.45 + 110*0.55; g = g*0.45 + 28*0.55; b = b*0.45 + 26*0.55;
         } else if (p.congestion < 0.9){             // axe qui sature
@@ -387,11 +420,22 @@ function dessinerConvois(sx, sy){
   ctx.restore();
 }
 
+// Titre et valeur affichée de chaque filtre — la légende décode alors la heatmap
+const META_FILTRE = {
+  defense:     { titre: "DÉFENSE DES TUILES",  val: t => "×" + TERRAINS[t].def.toFixed(2) },
+  deplacement: { titre: "DÉPLACEMENT · COÛT",  val: t => "×" + TERRAINS[t].cout.toFixed(1) },
+  transit:     { titre: "TRANSIT · DÉBIT",     val: t => TERRAINS[t].debit.toFixed(1) },
+};
+
 // Légende des terrains : échantillon de motif + coût de marche, pour que le
-// joueur sache lire ce qu'il voit sur la carte
+// joueur sache lire ce qu'il voit sur la carte. Sous filtre, elle bascule sur
+// la pastille heatmap + la valeur de la capacité affichée.
 function dessinerLegende(w, h){
+  const filtre = etat.filtre;
+  const heat = filtre ? tableFiltre(filtre) : null;
   // seulement les terrains de la carte affichée (procédurale ou OSM)
-  const items = [...new Set(etat.prov.map(p => p.terrain))].sort((a,b) => a-b);
+  let items = [...new Set(etat.prov.map(p => p.terrain))];
+  items = heat ? items.sort((a,b) => heat[b] - heat[a]) : items.sort((a,b) => a-b);
   const lh = 21, pad = 9, cw = 30, sh = 16;
   const bh = 19 + items.length*lh + pad;
   const bw = 172;
@@ -405,22 +449,29 @@ function dessinerLegende(w, h){
   ctx.textAlign = "left";
   ctx.fillStyle = "#9ba09a";
   ctx.font = "700 11px 'Saira Condensed', sans-serif";
-  ctx.fillText("TERRAIN · COÛT DE MARCHE", x0+pad, y0+13);
+  ctx.fillText(heat ? META_FILTRE[filtre].titre : "TERRAIN · COÛT DE MARCHE", x0+pad, y0+13);
 
   items.forEach((t, k) => {
     const yy = y0 + 19 + k*lh;
-    const col = TERRAINS[t].col;
-    for (let py = 0; py < sh; py++)
-      for (let px = 0; px < cw; px++){
-        const mo = motifTerrain(t, px, py);
-        ctx.fillStyle = `rgb(${Math.max(0,col[0]+mo)},${Math.max(0,col[1]+mo)},${Math.max(0,col[2]+mo)})`;
-        ctx.fillRect(x0+pad+px, yy+py, 1, 1);
-      }
+    if (heat){                                  // pastille pleine à la couleur de la heatmap
+      const [fr, fg, fb] = rampeFiltre(heat[t]);
+      ctx.fillStyle = `rgb(${fr|0},${fg|0},${fb|0})`;
+      ctx.fillRect(x0+pad, yy, cw, sh);
+    } else {
+      const col = TERRAINS[t].col;
+      for (let py = 0; py < sh; py++)
+        for (let px = 0; px < cw; px++){
+          const mo = motifTerrain(t, px, py);
+          ctx.fillStyle = `rgb(${Math.max(0,col[0]+mo)},${Math.max(0,col[1]+mo)},${Math.max(0,col[2]+mo)})`;
+          ctx.fillRect(x0+pad+px, yy+py, 1, 1);
+        }
+    }
     ctx.strokeStyle = "#0e100e"; ctx.lineWidth = 1;
     ctx.strokeRect(x0+pad, yy, cw, sh);
     ctx.fillStyle = "#e8e4d6";
     ctx.font = "13px 'Saira Condensed', sans-serif";
-    ctx.fillText(`${TERRAINS[t].nom} ×${coutMarche(t)}`, x0+pad+cw+8, yy+12);
+    const etiq = heat ? `${TERRAINS[t].nom} ${META_FILTRE[filtre].val(t)}` : `${TERRAINS[t].nom} ×${coutMarche(t)}`;
+    ctx.fillText(etiq, x0+pad+cw+8, yy+12);
   });
   ctx.restore();
 }

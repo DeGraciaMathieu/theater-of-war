@@ -3,6 +3,7 @@ export const etat = {
   prov: [], unites: [], ordres: [], poches: [], batailles: [],
   siteIdx: null, imgData: null, rasterCv: null, rasterCtx: null,
   jour: 1, auto: false, vueSupply: false,
+  filtre: null,                  // heatmap de terrain : null | "defense" | "deplacement" | "transit"
   teinteCamps: true,             // surimpression rouge/bleu des provinces (débrayable)
   anim: 0,                       // progression 0→1 de l'animation d'un jour
   selection: null, survol: -1, fini: false, sale: true, apercu: null,
