@@ -14,6 +14,16 @@ export const ARMEE = {
   moral: [88, 98],
 };
 
+// Comportement de l'IA rouge — tempérament « opportuniste » : prudente par
+// défaut, elle ne masse et ne frappe que là où le rapport de forces le paie,
+// mais fond sur toute faiblesse (province coupée de l'arrière, débordée).
+export const IA = {
+  inertie: 0.08,        // part de réserves qui temporisent un tour (évite le pas cadencé)
+  seuilAttaque: 0.50,   // ratio de combat estimé minimal pour engager (0.58 = seuil de percée)
+  bonusFaiblesse: 0.22, // abaissement du seuil face à une cible coupée ou débordée
+  menaceDepot: 1.1,     // puissance bleue / couverture rouge au-delà de laquelle un dépôt est menacé
+};
+
 // « debit » = capacité de transit, en points de ravitaillement (1 pt ≈ 12 000 hommes)
 // 0-4 : terrains de la carte procédurale · 5 bois et 7 urbain : les deux cartes · 6 berges : carte OSM
 export const TERRAINS = [

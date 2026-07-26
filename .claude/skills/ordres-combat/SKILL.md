@@ -21,7 +21,7 @@ auto_invoke: true
 | Moral | Dérive vers un palier logistique (`attrition`) : `0` si coupé, sinon `18 + 78×ravitaillement` — la coupure tue, pas le temps |
 | Capitulation | `ravitaillement === 0` et `moral < 20` → `detruire` |
 | Dissolution | `nettoyer` (privé) : force < 2000 → repli vers l'arrière `relie` si force ≥ 900, sinon anéanti |
-| IA rouge | `iaRouge` (`js/ia.js`) : par corps libre — attaque la voisine bleue la plus faible (`score`), repli si ravitaillement < 0.35, sinon glisse vers le front |
+| IA rouge | `iaRouge` (`js/ia.js`) : « opportuniste », évalue le théâtre chaque tour en 4 temps — (1) défendre un dépôt/QG menacé en rappelant la réserve la plus proche, (2) masser les corps de contact sur la province bleue la plus vulnérable si le ratio de combat estimé passe le seuil, (3) seuil abaissé face à une cible coupée ou débordée, (4) acheminer les réserves d'arrière vers le front. Réglages dans `IA` de `config.js`. Passe toujours par `donnerOrdre` |
 | Séquence d'un jour | `tour()` (`js/tour.js`) : supply → IA → transmissions → exécution → attrition → supply → fin de partie |
 
 ## Ajouter une règle de mouvement ou de combat
