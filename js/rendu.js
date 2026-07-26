@@ -318,9 +318,16 @@ export function dessiner(){
 
   dessinerBatailles(sx, sy);
 
-  // pions
-  for (const u of etat.unites){
-    const X = u.ax*sx, Y = u.ay*sy, W = 42, H = 26;
+  // pions — corps empilés sur une même province : cascade diagonale pour que
+  // chacun reste lisible plutôt que masqué. Le sélectionné est dessiné en
+  // dernier (donc le plus décalé, au-dessus de la pile).
+  const DECAL = 9;                     // pas de la cascade, en px écran
+  const rang = {};                     // rang courant du corps dans sa province
+  const ordrePions = [...etat.unites].sort((a,b) =>
+    (a.id === etat.selection ? 1 : 0) - (b.id === etat.selection ? 1 : 0));
+  for (const u of ordrePions){
+    const i = rang[u.prov] = (rang[u.prov] ?? -1) + 1;
+    const X = u.ax*sx + i*DECAL, Y = u.ay*sy + i*DECAL*0.8, W = 42, H = 26;
     const rav = ravitaillement(u);
     ctx.fillStyle = u.camp === ROUGE ? "#b02a20" : "#2f5d8a";
     ctx.strokeStyle = etat.selection === u.id ? "#e0a53c" : "rgba(0,0,0,.7)";
