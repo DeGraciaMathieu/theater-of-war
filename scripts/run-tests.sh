@@ -6,6 +6,12 @@ if printf '%s' "$input" | grep -Eq '"stop_hook_active" *: *true'; then
   exit 0
 fi
 cd "${CLAUDE_PROJECT_DIR:-.}" || exit 0
+
+# Le PATH hérité épingle un Node trop ancien pour le glob de `node --test`
+# (support ajouté en Node 21). On bascule sur Node 22 via nvm si disponible.
+export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" && nvm use 22 >/dev/null 2>&1
+
 log=$(mktemp)
 if ! node --test "tests/*.test.js" >"$log" 2>&1; then
   echo "npm test échoue — corrige les tests avant de terminer la tâche :" >&2
