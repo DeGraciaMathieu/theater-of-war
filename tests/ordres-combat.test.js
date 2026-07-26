@@ -119,9 +119,9 @@ test("l'IA rouge attaque la province bleue voisine la plus faiblement tenue", ()
   poserCorps(BLEU, 1, 3000);
   calculerSupply();
 
-  // l'IA passe son tour 35 % du temps : on boucle, l'inertie prolongée est
-  // impossible (0.35^60) — invariant robuste au tirage
-  for (let n = 0; n < 60 && !etat.ordres.length; n++) iaRouge();
+  // l'engagement est déterministe : un corps au contact d'une cible gagnable
+  // attaque dès le premier tour, sans tirage d'inertie
+  iaRouge();
 
   assert.equal(etat.ordres.length, 1);
   const o = etat.ordres[0];
@@ -129,6 +129,51 @@ test("l'IA rouge attaque la province bleue voisine la plus faiblement tenue", ()
   assert.equal(o.chemin[o.chemin.length-1], 1, "cible attendue : la voisine la plus faible");
   iaRouge();
   assert.equal(etat.ordres.length, 1, "un corps déjà commandé ne reçoit pas de second ordre");
+});
+
+test("l'IA achemine sa réserve d'arrière vers le front au lieu de la laisser inerte", () => {
+  carteRuban();
+  poserCorps(BLEU, 2, 12000);                     // tient le contact
+  const reserve = poserCorps(ROUGE, 5, 12000);    // corps d'arrière, aucun voisin bleu
+  calculerSupply();
+
+  // aucun corps rouge au contact : la réserve doit marcher vers la province
+  // rouge de contact (3) — l'inertie n'empêche qu'un tour, on boucle
+  for (let n = 0; n < 60 && !etat.ordres.length; n++) iaRouge();
+
+  assert.equal(etat.ordres.length, 1);
+  const o = etat.ordres[0];
+  assert.equal(o.unite, reserve.id);
+  assert.equal(o.chemin[o.chemin.length-1], 3, "la réserve gagne la province de contact");
+});
+
+test("l'IA masse deux corps sur une cible qu'un seul ne peut percer", () => {
+  carteRuban();
+  etat.prov[2].terrain = 3;                       // montagne : défense ×1.85
+  poserCorps(BLEU, 2, 10000, 90);                 // défenseur retranché
+  poserCorps(ROUGE, 3, 12000, 90);
+  poserCorps(ROUGE, 3, 12000, 90);
+  calculerSupply();
+
+  iaRouge();
+
+  assert.equal(etat.ordres.length, 2, "concentration : les deux corps sont engagés");
+  assert.ok(etat.ordres.every(o => o.chemin[o.chemin.length-1] === 2),
+    "les deux visent la même province");
+});
+
+test("l'IA rappelle une réserve pour couvrir un dépôt menacé", () => {
+  carteRuban();
+  etat.prov[3].depot = true;                      // dépôt rouge avancé, au contact du bleu
+  poserCorps(BLEU, 2, 30000, 95);                 // menace supérieure à la couverture
+  const reserve = poserCorps(ROUGE, 5, 12000);    // réserve disponible à l'arrière
+  calculerSupply();
+
+  for (let n = 0; n < 60 && !etat.ordres.some(o => o.unite === reserve.id); n++) iaRouge();
+
+  const o = etat.ordres.find(o => o.unite === reserve.id);
+  assert.ok(o, "la réserve est rappelée");
+  assert.equal(o.chemin[o.chemin.length-1], 3, "elle marche couvrir le dépôt menacé");
 });
 
 test("attrition : un corps coupé et démoralisé capitule", () => {

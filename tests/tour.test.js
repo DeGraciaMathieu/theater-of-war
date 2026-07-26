@@ -8,13 +8,14 @@ import { calculerSupply } from "../js/logistique.js";
 import { donnerOrdre } from "../js/ordres.js";
 import { tour, avancerJusquEvenement } from "../js/tour.js";
 
-// le corps rouge posé sur son dépôt (province 5) est inerte : aucune cible
-// bleue voisine, aucun axe d'avance — et sans lui verifierFin déclarerait
-// la victoire immédiate de l'Alliance
+// un corps rouge doit exister, sinon verifierFin déclare la victoire immédiate
+// de l'Alliance. On le pose au contact d'un verrou bleu trop fort pour lui :
+// l'IA opportuniste le fait tenir sans engager, ce qui garde ces scénarios calmes.
 
 test("l'avance rapide s'arrête quand un corps bleu arrive à destination", () => {
   carteRuban();
-  poserCorps(ROUGE, 5, 10000);
+  poserCorps(ROUGE, 3, 5000, 40);        // au contact mais trop faible : il tient
+  poserCorps(BLEU, 2, 30000, 95);        // verrou bleu que le rouge ne peut percer
   const u = poserCorps(BLEU, 0, 12000);
   calculerSupply();
   donnerOrdre(u, 2);
@@ -23,7 +24,7 @@ test("l'avance rapide s'arrête quand un corps bleu arrive à destination", () =
 
   assert.equal(motif, "corps à destination");
   assert.equal(u.prov, 2);
-  assert.equal(etat.ordres.length, 0);
+  assert.ok(!etat.ordres.some(o => o.unite === u.id), "l'ordre du corps arrivé est retiré");
   assert.ok(etat.jour > 1, "des jours ont été enchaînés");
 });
 
@@ -55,7 +56,8 @@ test("perdre le dernier dépôt bleu perd la partie", () => {
 
 test("sans événement, l'avance rapide plafonne à AVANCE_MAX jours", () => {
   carteRuban();
-  poserCorps(ROUGE, 5, 10000);
+  poserCorps(ROUGE, 3, 5000, 40);        // au contact d'un verrou trop fort : inerte
+  poserCorps(BLEU, 2, 30000, 95);
   poserCorps(BLEU, 0, 12000);
   calculerSupply();
 
