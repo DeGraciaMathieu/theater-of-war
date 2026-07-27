@@ -1,6 +1,5 @@
 import "./interaction.js";
 import { etat } from "./etat.js";
-import { genererCarte } from "./carte.js";
 import { tour } from "./tour.js";
 import { dessiner } from "./rendu.js";
 
@@ -38,5 +37,7 @@ function boucle(t){
   requestAnimationFrame(boucle);
 }
 
-genererCarte();
+// La carte n'est plus générée au chargement : c'est le choix du théâtre à
+// l'accueil qui la construit. La boucle tourne à vide (dessiner() sort tôt tant
+// qu'aucun théâtre n'est choisi) jusqu'à la sélection.
 requestAnimationFrame(t => { etat.dernier = t; boucle(t); });

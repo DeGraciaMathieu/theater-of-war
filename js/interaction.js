@@ -4,6 +4,7 @@ import { cheminVers, estimerOrdre, donnerOrdre, annulerOrdre } from "./ordres.js
 import { porteeDepuis } from "./logistique.js";
 import { ficheVide, ficheUnite, ficheProv } from "./hud.js";
 import { tour, avancerJusquEvenement } from "./tour.js";
+import { THEATRES } from "./theatres.js";
 
 const cv = document.getElementById("cv");
 
@@ -88,6 +89,15 @@ for (const b of boutonsFiltre) b.onclick = () => {
   etat.sale = true;
   for (const x of boutonsFiltre) x.setAttribute("aria-pressed", etat.filtre === x.dataset.filtre);
 };
-// Accueil : la carte procédurale du démarrage est déjà prête derrière l'overlay
+// Accueil : chaque théâtre du catalogue devient un bouton ; le clic génère sa
+// carte puis révèle la scène. Un théâtre indisponible reste affiché mais inerte.
 const elAccueil = document.getElementById("accueil");
-document.getElementById("bAccueilProcedural").onclick = () => { elAccueil.hidden = true; };
+const elChoix = document.getElementById("accueilChoix");
+for (const t of THEATRES){
+  const b = document.createElement("button");
+  if (t.disponible) b.className = "primaire";
+  b.disabled = !t.disponible;
+  b.innerHTML = `${t.nom}<small>${t.description}</small>`;
+  b.onclick = () => { t.generer(); elAccueil.hidden = true; };
+  elChoix.appendChild(b);
+}

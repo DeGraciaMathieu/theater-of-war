@@ -63,6 +63,8 @@ button:focus-visible{outline:2px solid var(--ambre);outline-offset:2px}
 button[aria-pressed="true"]{background:#2a2415;color:var(--ambre);border-color:var(--ambre)}
 button.primaire{background:var(--ambre);color:var(--encre);border-color:var(--ambre)}
 button.primaire:hover{background:#f0b654;color:var(--encre)}
+button:disabled{opacity:.4;cursor:not-allowed}
+button:disabled:hover{border-color:var(--trait);color:var(--os)}
 .fiche{flex:1;font-size:16px;line-height:1.45;overflow:hidden}
 .fiche .vide{color:var(--os-faible)}
 .jauge{height:6px;background:#232823;margin:3px 0 8px;position:relative}
