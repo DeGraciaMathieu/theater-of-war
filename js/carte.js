@@ -182,7 +182,7 @@ function poserBase(camp, x, y){
   const avant = prov.filter(p => p.proprio === camp && !p.depot)
                     .sort((a,b) => Math.hypot(a.x-ax,a.y-ay) - Math.hypot(b.x-ax,b.y-ay))[0];
   avant.depot = true; depots.push(avant);
-  tries[0].qg = true;
+  tries[0].qg = camp;   // camp d'origine du QG : sert à détecter sa capture (victoire)
 
   // les corps déployés vers le front, puis la réserve à mi-profondeur
   const tirer = ([min, max]) => Math.round(min + alea()*(max - min));

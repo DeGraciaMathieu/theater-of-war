@@ -67,9 +67,14 @@ function boucleAvance(){
 }
 
 function verifierFin(){
+  const qgRouge = etat.prov.find(p => p.qg === ROUGE);
+  const qgBleu = etat.prov.find(p => p.qg === BLEU);
   const dr = etat.prov.filter(p => p.depot && p.proprio === ROUGE).length;
   const db = etat.prov.filter(p => p.depot && p.proprio === BLEU).length;
-  if (dr === 0 || etat.unites.every(u => u.camp === BLEU)){ etat.fini = true; journal("<b>Victoire de l'Alliance.</b>"); etat.auto = false; }
+  // capturer le QG ennemi emporte la décision, avant même l'effondrement logistique
+  if (qgRouge && qgRouge.proprio === BLEU){ etat.fini = true; journal("<b>Victoire de l'Alliance : le QG de la Fédération est tombé.</b>"); etat.auto = false; }
+  else if (qgBleu && qgBleu.proprio === ROUGE){ etat.fini = true; journal("<b>Défaite : votre QG est tombé.</b>"); etat.auto = false; }
+  else if (dr === 0 || etat.unites.every(u => u.camp === BLEU)){ etat.fini = true; journal("<b>Victoire de l'Alliance.</b>"); etat.auto = false; }
   else if (db === 0 || etat.unites.every(u => u.camp === ROUGE)){ etat.fini = true; journal("<b>Défaite : le théâtre est perdu.</b>"); etat.auto = false; }
   if (etat.fini){ bStep.disabled = true; bAuto.disabled = true; bAuto.textContent = "Terminé"; }
 }
