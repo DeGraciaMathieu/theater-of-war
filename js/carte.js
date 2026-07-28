@@ -69,6 +69,7 @@ export function genererCarte(){
 export function reinitialiser(){
   etat.prov = []; etat.unites = []; etat.ordres = [];
   etat.jour = 1; etat.fini = false; etat.selection = null;
+  etat.iaAxe = null;
 }
 
 export function creerProvince(id, x, y, terrain, ville){

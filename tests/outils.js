@@ -8,7 +8,7 @@ import { ROUGE, BLEU } from "../js/config.js";
 export function carteRuban(){
   etat.prov = []; etat.unites = []; etat.ordres = []; etat.poches = [];
   etat.batailles = []; etat.jour = 1; etat.fini = false; etat.selection = null;
-  etat.nextId = 1;
+  etat.nextId = 1; etat.iaAxe = null;
   for (let i = 0; i < 6; i++){
     etat.prov.push({
       id:i, x:i*100+50, y:280, cx:i*100+50, cy:280, px:0,

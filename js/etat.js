@@ -9,6 +9,7 @@ export const etat = {
   selection: null, survol: -1, fini: false, sale: true, apercu: null,
   arbreSupply: {},               // parents du Dijkstra de supply, par camp — sert à tracer les axes
   porteeDepot: null,             // { prov, provs } : zone d'action du dépôt survolé
+  iaAxe: null,                   // { prov, depuis, blocage } : axe d'effort mémorisé de l'IA rouge
   accu: 0, dernier: 0,
   nextId: 1,
 };

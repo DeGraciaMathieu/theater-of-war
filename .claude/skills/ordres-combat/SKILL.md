@@ -21,7 +21,8 @@ auto_invoke: true
 | Moral | Dérive vers un palier logistique (`attrition`) : `0` si coupé, sinon `18 + 78×ravitaillement` — la coupure tue, pas le temps |
 | Capitulation | `ravitaillement === 0` et `moral < 20` → `detruire` |
 | Dissolution | `nettoyer` (privé) : force < 2000 → repli vers l'arrière `relie` si force ≥ 900, sinon anéanti |
-| IA rouge | `iaRouge` (`js/ia.js`) : « opportuniste », évalue le théâtre chaque tour en 4 temps — (1) défendre un dépôt/QG menacé en rappelant la réserve la plus proche, (2) masser les corps de contact sur la province bleue la plus vulnérable si le ratio de combat estimé passe le seuil, (3) seuil abaissé face à une cible coupée ou débordée, (4) acheminer les réserves d'arrière vers le front. Réglages dans `IA` de `config.js`. Passe toujours par `donnerOrdre` |
+| IA rouge | `iaRouge` (`js/ia.js`) : « stratège », évalue le théâtre chaque tour — (1) défendre un dépôt/QG menacé en rappelant la réserve la plus proche, (2) tenir un **axe d'effort** (`etat.iaAxe`, cf. ci-dessous) et y masser les corps de contact, la cible étant celle de plus haute **valeur de coupure** (`gainCoupure` : nombre de provinces bleues qui perdraient `relie` si elle tombait) pondérée par vulnérabilité et défense, (3) hors de l'axe, ne saisir que les opportunités déjà gagnables, et s'en abstenir en infériorité de puissance au contact (**posture prudente**), (4) acheminer les réserves d'arrière vers le front rouge le plus proche **non saturé**. Réglages dans `IA` de `config.js`. Passe toujours par `donnerOrdre` |
+| Axe d'effort (Schwerpunkt) | `etat.iaAxe` = `{ prov, depuis, blocage }` ou `null` : cible mémorisée de l'IA. Choisi sur `scoreCible` (valeur de coupure + vulnérabilité − défense), conservé tant qu'il reste une province bleue de contact, abandonné après `IA.patienceAxe` assauts infructueux. Réinitialisé à `null` dans `reinitialiser()` (`carte.js`) et `carteRuban()` (tests). Seul état d'IA persistant entre les tours |
 | Séquence d'un jour | `tour()` (`js/tour.js`) : supply → IA → transmissions → exécution → attrition → supply → fin de partie |
 
 ## Ajouter une règle de mouvement ou de combat
@@ -30,11 +31,13 @@ auto_invoke: true
 2. Mouvement : toucher `cheminVers`/`executerOrdres` — attention, `estimerOrdre` doit rester la source unique du délai affiché ET appliqué.
 3. Combat : toucher `combat()` ; si l'issue change, vérifier `executerOrdres` (valeur de retour `passe`) et l'événement `etat.batailles` (les champs sont lus par `dessinerBatailles` dans `rendu.js`).
 4. Moral/attrition : `attrition()` ; le palier est la seule dérive autorisée — pas d'érosion « au temps ».
-5. IA : uniquement `ia.js` ; elle passe par `donnerOrdre` comme le joueur, jamais par mutation directe.
-6. Tests : `tests/ordres-combat.test.js` (carte-ruban) — latence puis marche, conquête, percée, capitulation. Le combat est déterministe au ratio près : tester des rapports de forces nets.
+5. IA : uniquement `ia.js` ; elle passe par `donnerOrdre` comme le joueur, jamais par mutation directe. Tout état d'IA à conserver entre les tours = champ d'`etat` (aujourd'hui `iaAxe`), remis à zéro dans `reinitialiser()` ET `carteRuban()`.
+6. Tests : `tests/ordres-combat.test.js` et `tests/ia-strategie.test.js` (carte-ruban ou graphe posé à la main via `relier`) — latence puis marche, conquête, percée, capitulation, axe d'effort, coupure, enveloppement, désengorgement, posture. Le combat est déterministe au ratio près : tester des rapports de forces nets.
 
 ## Pièges connus
 
 - `detruire` filtre `etat.unites` ET `etat.ordres` : toute nouvelle collection référençant des corps doit y être purgée aussi.
 - Un ordre repoussé (`passe === false`) tombe ; ne pas le faire persister sans décision de design.
 - `u.coupe` sert uniquement à journaliser la bascule en poche (`detecterPoches`) — ne pas le réutiliser comme état de jeu.
+- `gainCoupure` (IA) re-parcourt l'accessibilité bleue par candidat : borné à `IA.candidatsCoupure` cibles les plus vulnérables. L'enveloppement d'un saillant n'a **pas** de passe dédiée — il émerge de ce score (couper la liaison, qui met la pointe en poche, prime sur l'assaut frontal). Ne pas ajouter de détection de saillant redondante.
+- `etat.iaAxe` pointe une province par `id` : après une refonte de carte/tests, un `id` périmé est neutralisé par la validation `contactBleu` en tête d'`iaRouge`, mais préférer le reset explicite.

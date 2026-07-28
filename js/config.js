@@ -14,14 +14,23 @@ export const ARMEE = {
   moral: [88, 98],
 };
 
-// Comportement de l'IA rouge — tempérament « opportuniste » : prudente par
-// défaut, elle ne masse et ne frappe que là où le rapport de forces le paie,
-// mais fond sur toute faiblesse (province coupée de l'arrière, débordée).
+// Comportement de l'IA rouge — tempérament « stratège » : prudente par défaut,
+// elle ne masse et ne frappe que là où le rapport de forces le paie, mais fond
+// sur toute faiblesse (province coupée de l'arrière, débordée). Elle choisit un
+// axe d'effort qu'elle tient, et vise d'abord les provinces dont la chute coupe
+// le plus d'arrière bleu (logistique offensive).
 export const IA = {
   inertie: 0.08,        // part de réserves qui temporisent un tour (évite le pas cadencé)
   seuilAttaque: 0.50,   // ratio de combat estimé minimal pour engager (0.58 = seuil de percée)
   bonusFaiblesse: 0.22, // abaissement du seuil face à une cible coupée ou débordée
   menaceDepot: 1.1,     // puissance bleue / couverture rouge au-delà de laquelle un dépôt est menacé
+  patienceAxe: 3,       // jours d'assaut infructueux avant d'abandonner l'axe d'effort
+  candidatsCoupure: 6,  // provinces de contact les plus vulnérables évaluées finement (borne de coût)
+  poidsCoupure: 2e9,    // valeur d'une province bleue coupée de son arrière : couper prime sur frapper
+  poidsVuln: 1e9,       // valeur d'une cible déjà vulnérable (coupée ou débordée)
+  bonusDepot: 1e9,      // le dépôt avancé bleu projette le ravitaillement : cible de choix
+  congestionMin: 0.6,   // en deçà, un front rouge est saturé : y router une réserve de plus n'aide pas
+  seuilPosture: 0.9,    // si puissance rouge au contact < seuilPosture × bleue, l'IA se limite à son axe
 };
 
 // « debit » = capacité de transit, en points de ravitaillement (1 pt ≈ 12 000 hommes)
